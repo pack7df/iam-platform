@@ -1,6 +1,15 @@
 # Web
 
-Espacio reservado para la SPA administrativa.
+Frontend administrativo inicial del IAM Platform.
 
-- `src/`: codigo fuente.
-- `tests/`: pruebas del frontend.
+## Scripts
+
+- `npm install`
+- `npm run dev`
+- `npm run build`
+- `npm run lint`
+
+## Estructura
+
+- `src/`: codigo fuente de la SPA.
+- `tests/`: espacio reservado para pruebas del frontend.
