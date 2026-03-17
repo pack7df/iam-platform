@@ -1,2 +1,6 @@
 apps/web/node_modules/
 apps/web/dist/
+**/bin/
+**/obj/
+*.user
+*.suo
