@@ -5,3 +5,5 @@ apps/web/dist/
 *.user
 *.suo
 .vs/
+.env
+**/.env
