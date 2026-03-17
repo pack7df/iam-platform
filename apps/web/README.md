@@ -11,6 +11,11 @@ Frontend administrativo inicial del IAM Platform.
 - `npm run test`
 - `npm run test:watch`
 
+## Configuracion local
+
+- Usa `apps/web/.env.example` como referencia para definir `VITE_API_BASE_URL`.
+- El valor local sugerido apunta a la API en `http://localhost:5125`.
+
 ## Testing
 
 - La base de pruebas usa `Vitest` con `jsdom` y `@testing-library/react`.
