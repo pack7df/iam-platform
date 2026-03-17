@@ -128,8 +128,10 @@
 
 ## Politica de ramas y PRs
 - No se debe trabajar directamente sobre `main`.
+- `main` queda reservado para integracion estable y releases.
+- `dev` es la rama base de integracion para el trabajo diario.
 - Cada tarea debe vivir en una rama corta dedicada y producir exactamente un PR principal.
-- Cada rama debe nacer desde `main` y volver a `main` mediante pull request.
+- Cada rama de tarea debe nacer desde `dev` y volver a `dev` mediante pull request.
 - La plantilla operativa para IA debe tomarse de `AI_TASK_PR_TEMPLATE.md`.
 - La plantilla de cuerpo de PR para GitHub debe tomarse de `.github/pull_request_template.md`.
 - Formato de rama recomendado: `<tipo>/<task-id>-<short-slug>`.
@@ -199,7 +201,8 @@
 - Estrategia de desarrollo: TDD.
 - Flujo de entrega: una tarea por pull request.
 - Politica de tamano de PR: objetivo de hasta 600 lineas y maximo de 1000 lineas cambiadas.
-- Politica de ramas: `<tipo>/<task-id>-<short-slug>` desde `main`.
+- Politica de ramas: `<tipo>/<task-id>-<short-slug>` desde `dev`.
+- Politica de integracion: todo PR debe apuntar a `dev`; `main` solo recibe cambios promovidos desde `dev`.
 - Politica de PR: titulo `[<task-id>] <tipo>: <resumen corto>` y merge preferido `squash`.
 - Politica de commits: Conventional Commits.
 - Plantilla operativa para IA: `AI_TASK_PR_TEMPLATE.md`.
