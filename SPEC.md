@@ -18,7 +18,7 @@ Hoy la seguridad suele resolverse por aplicacion, duplicando usuarios, roles, re
 
 ## Actores iniciales
 - Usuario de sistema: identidad interna del servicio; administra la plataforma global, no pertenece a ningun tenant y puede invitar otros usuarios de sistema.
-- Administrador de tenant: identidad de cliente; pertenece a un tenant, puede registrarse creando el tenant inicial, administra su configuracion con alcance total sobre su tenant y puede invitar otros administradores de tenant.
+- Administrador de tenant: identidad de cliente; pertenece a un tenant, puede registrarse creando el tenant inicial, administra su configuracion con alcance total sobre su tenant y puede invitar otros administradores de tenant. No actua como usuario final sujeto a reglas de aplicacion.
 - Usuario final de tenant: identidad perteneciente a un tenant; es el sujeto principal evaluado por las reglas de acceso de las aplicaciones integradas.
 - Usuario de servicio administrativo: identidad no humana perteneciente a un tenant; administra configuracion por API de forma automatizada.
 - Aplicacion consumidora: delega autenticacion y consulta decisiones efectivas de acceso.
@@ -42,6 +42,7 @@ Hoy la seguridad suele resolverse por aplicacion, duplicando usuarios, roles, re
 - Debe existir un unico usuario de sistema inicial creado al bootstrap de la plataforma.
 - Un usuario de sistema no pertenece a ningun tenant.
 - Un usuario de sistema puede invitar otros usuarios de sistema.
+- Las invitaciones no crean identidades inmediatamente; primero generan una invitacion pendiente.
 - Un usuario de tenant pertenece a un unico tenant y no puede existir en varios tenants al mismo tiempo.
 - Un rol pertenece a un unico tenant y no puede existir en varios tenants al mismo tiempo.
 - Una aplicacion pertenece a un unico tenant y no puede existir en varios tenants al mismo tiempo.
@@ -49,6 +50,8 @@ Hoy la seguridad suele resolverse por aplicacion, duplicando usuarios, roles, re
 - El registro inicial de un administrador de tenant debe poder crear un tenant nuevo.
 - Un administrador de tenant tiene acceso administrativo completo sobre su tenant por tipo de usuario, sin requerir roles ni reglas de autorizacion para ese alcance administrativo.
 - Un administrador de tenant puede invitar otros administradores de tenant dentro de su mismo tenant.
+- La identidad invitada se crea solo cuando la invitacion correspondiente es aceptada exitosamente.
+- Un administrador de tenant no participa como usuario final en el modelo de reglas de aplicacion; si una persona necesita ambos alcances, debe tener identidades separadas.
 - Cada aplicacion debe tener un arbol de recursos.
 - Cada recurso debe poder ubicarse dentro de un unico arbol de una aplicacion.
 - Cada recurso debe poder definir una o mas operaciones.
@@ -99,6 +102,7 @@ Hoy la seguridad suele resolverse por aplicacion, duplicando usuarios, roles, re
 - RF-04: El sistema debe permitir crear, editar, activar y desactivar usuarios de sistema.
 - RF-05: Un usuario de sistema no debe pertenecer a ningun tenant.
 - RF-06: Un usuario de sistema autenticado debe poder invitar otro usuario de sistema.
+- RF-06a: Una invitacion de usuario de sistema debe crear una invitacion pendiente y no una identidad activa inmediata.
 - RF-07: El sistema debe permitir el registro de un administrador de tenant nuevo.
 - RF-08: Cuando un administrador de tenant se registra por primera vez, el sistema debe crear un tenant nuevo y asociarlo a ese administrador.
 - RF-09: El sistema debe permitir crear, editar, activar y desactivar usuarios de tenant.
@@ -106,6 +110,8 @@ Hoy la seguridad suele resolverse por aplicacion, duplicando usuarios, roles, re
 - RF-11: Cada usuario de tenant debe pertenecer exactamente a un tenant.
 - RF-12: Un administrador de tenant debe tener acceso administrativo completo sobre su tenant sin requerir roles ni reglas de autorizacion para ese alcance administrativo.
 - RF-13: Un administrador de tenant autenticado debe poder invitar otros administradores de tenant dentro de su tenant.
+- RF-13a: Una invitacion de administrador de tenant debe crear una invitacion pendiente y la identidad solo debe nacer al aceptar la invitacion.
+- RF-13b: Un administrador de tenant no debe poder actuar como usuario final sujeto a reglas de aplicacion con esa misma identidad administrativa.
 - RF-14: El sistema debe permitir crear, editar y desactivar roles.
 - RF-15: El sistema debe permitir asignar multiples roles a un usuario de tenant dentro de su tenant.
 - RF-16: El sistema debe permitir registrar aplicaciones dentro de un tenant.
@@ -146,6 +152,8 @@ Hoy la seguridad suele resolverse por aplicacion, duplicando usuarios, roles, re
 - Dado un visitante, cuando se registra como administrador de tenant, entonces el sistema crea un tenant nuevo y lo asocia a ese administrador.
 - Dado un administrador de tenant autenticado, cuando administra configuracion de su tenant, entonces el sistema permite la operacion sin requerir roles ni reglas de autorizacion adicionales.
 - Dado un administrador de tenant autenticado, cuando invita otro administrador de tenant, entonces la identidad invitada queda asociada al mismo tenant con alcance administrativo.
+- Dado una invitacion emitida para un usuario de sistema o un administrador de tenant, cuando la invitacion aun no fue aceptada, entonces solo existe la invitacion pendiente y la identidad todavia no se crea.
+- Dado una invitacion pendiente valida, cuando la persona invitada la acepta, entonces el sistema crea la identidad correspondiente con el alcance definido por la invitacion.
 - Dado un tenant con dos aplicaciones, cuando un administrador registra usuarios de tenant y roles, entonces todos quedan asociados al tenant correcto.
 - Dado un usuario de servicio administrativo autenticado para un tenant, cuando invoca la API administrativa para actualizar configuracion del tenant, entonces el sistema procesa la operacion dentro de ese tenant y registra auditoria.
 - Dado una aplicacion con un arbol de recursos, cuando un administrador registra un recurso hijo, entonces el sistema conserva la relacion con su recurso padre.
@@ -178,13 +186,12 @@ Hoy la seguridad suele resolverse por aplicacion, duplicando usuarios, roles, re
 - La convivencia entre usuarios de sistema globales y usuarios de tenant exige limites de alcance muy claros para evitar errores de aislamiento.
 - Los privilegios implicitos de usuarios de sistema y administradores de tenant introducen un camino de autorizacion fuera del motor de reglas y deben mantenerse claramente separado.
 - Ignorar herencias no resueltas evita falsos negativos sobre reglas explicitas concurrentes, pero aumenta la necesidad de explicar por que algunas reglas no aportaron decision.
+- Mantener al `TenantAdmin` fuera del modelo de usuario final simplifica el MVP, pero obliga a crear otra identidad si una misma persona necesita operar tambien bajo reglas de aplicacion.
 - Las aplicaciones integradas pertenecen a un contexto de confianza comun.
 - El detalle exacto del protocolo de SSO aun no esta decidido.
 
 ## Preguntas abiertas
 - Los usuarios de servicio administrativo usan el mismo modelo de roles y reglas que los usuarios humanos del tenant o un esquema separado?
-- Las invitaciones crean la identidad inmediatamente o requieren aceptacion posterior?
-- Un administrador de tenant puede tambien actuar como usuario final sujeto a reglas de aplicacion, o su alcance debe mantenerse solo administrativo?
 - El identificador string del recurso debe ser unico dentro de la aplicacion o unico por rama?
 - Las operaciones deben ser libres por recurso o debe existir un catalogo comun por aplicacion o tenant?
 - Los roles pertenecen al tenant completo o pueden quedar restringidos a una aplicacion?
