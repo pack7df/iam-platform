@@ -52,6 +52,125 @@ Dejar listo el esqueleto tecnico y cerrar las decisiones minimas que bloquean la
 - Se pueden correr tests vacios o basicos en frontend y backend.
 - No quedan decisiones bloqueantes para modelar reglas efectivas.
 
+### Desglose en tareas revisables
+- Cada tarea de esta etapa deberia vivir idealmente en un PR separado.
+- Si una tarea supera el objetivo normal de tamano, debe dividirse sin mezclar cambios de docs, frontend, backend e infraestructura.
+
+#### Tarea 0.1 - Cerrar defaults del motor de autorizacion
+- Objetivo: resolver los dos bloqueos que afectan directamente la semantica del motor de reglas.
+- Alcance:
+  - definir que ocurre cuando no existe ninguna regla aplicable;
+  - definir que ocurre cuando la herencia llega a la raiz sin un valor explicito;
+  - dejar la decision escrita en los documentos de requisitos que correspondan.
+- Entregables:
+  - decision documentada sin ambiguedad;
+  - criterios de aceptacion y preguntas abiertas actualizados.
+- Criterio de revision:
+  - una persona revisora puede responder ambos escenarios sin asumir comportamiento implicito.
+
+#### Tarea 0.2 - Cerrar invitaciones y alcance del tenant admin
+- Objetivo: resolver las definiciones funcionales minimas del modelo de identidad antes de implementar casos de uso.
+- Alcance:
+  - definir si la invitacion crea identidad inmediatamente o requiere aceptacion posterior;
+  - definir si un `TenantAdmin` tambien puede actuar como usuario final sujeto a reglas;
+  - dejar la decision escrita en los documentos de requisitos que correspondan.
+- Entregables:
+  - flujo de invitaciones definido;
+  - alcance del `TenantAdmin` documentado.
+- Criterio de revision:
+  - el modelo de actores e invitaciones queda implementable sin supuestos extra.
+
+#### Tarea 0.3 - Crear el esqueleto del monorepo
+- Objetivo: reflejar en el repositorio la estructura base acordada en `TECH_SPEC.md`.
+- Alcance:
+  - crear `apps/`, `infra/` y las rutas base esperadas para `web` y `api`;
+  - preparar los archivos raiz minimos para trabajar el monorepo.
+- Entregables:
+  - estructura real del repositorio creada;
+  - punto de entrada claro para frontend, backend e infraestructura.
+- Criterio de revision:
+  - la estructura del repo coincide con la arquitectura definida y puede recorrerse sin huecos importantes.
+
+#### Tarea 0.4 - Inicializar `apps/web`
+- Objetivo: dejar arrancado el frontend administrativo con un shell minimo.
+- Alcance:
+  - crear `apps/web` con React + Vite;
+  - dejar una pantalla inicial basica;
+  - validar que la app levanta en local.
+- Entregables:
+  - proyecto frontend inicializado;
+  - shell minimo funcional.
+- Criterio de revision:
+  - `web` arranca localmente y muestra una pagina base sin depender aun del dominio.
+
+#### Tarea 0.5 - Configurar testing base del frontend
+- Objetivo: dejar listo el arnes minimo de pruebas del frontend antes de agregar funcionalidad real.
+- Alcance:
+  - integrar `Vitest`;
+  - dejar al menos un test basico del shell o de un componente minimo;
+  - documentar como correr las pruebas del frontend.
+- Entregables:
+  - setup de testing de `web`;
+  - prueba automatizada base pasando.
+- Criterio de revision:
+  - una persona revisora puede ejecutar los tests del frontend sin configuracion manual oculta.
+
+#### Tarea 0.6 - Inicializar la solucion .NET del backend
+- Objetivo: dejar creada la base tecnica de `apps/api` con sus capas DDD.
+- Alcance:
+  - crear la solucion y los proyectos `Api`, `Application`, `Domain` e `Infrastructure`;
+  - dejar referencias entre proyectos coherentes con la arquitectura;
+  - asegurar que la solucion compila.
+- Entregables:
+  - solucion .NET creada;
+  - capas base del backend conectadas.
+- Criterio de revision:
+  - la solucion compila en limpio y la separacion de capas es visible en el repo.
+
+#### Tarea 0.7 - Agregar `health check` y arnes base de testing backend
+- Objetivo: validar que la API puede arrancar y que el backend tiene base para TDD e integracion.
+- Alcance:
+  - exponer un `health check` minimo en la API;
+  - preparar `xUnit`, `FluentAssertions`, `WebApplicationFactory` y `Testcontainers`;
+  - dejar al menos un test base de arranque o smoke test.
+- Entregables:
+  - endpoint de salud funcional;
+  - proyectos de tests backend creados y ejecutables.
+- Criterio de revision:
+  - la API responde al `health check` y existe al menos una prueba backend pasando.
+
+#### Tarea 0.8 - Preparar PostgreSQL local y configuracion por ambiente
+- Objetivo: habilitar una base local reproducible y convenciones explicitas de configuracion.
+- Alcance:
+  - definir el mecanismo local para levantar PostgreSQL desde `infra/`;
+  - separar configuracion por ambiente para backend y, si aplica, frontend;
+  - documentar variables y valores minimos requeridos para desarrollo.
+- Entregables:
+  - PostgreSQL local levantable;
+  - configuracion base por ambiente disponible.
+- Criterio de revision:
+  - otra persona puede levantar la base y conectar la API sin descubrir pasos implicitos.
+
+#### Tarea 0.9 - Consolidar scripts base y flujo local
+- Objetivo: dejar un flujo de trabajo minimo y repetible para ejecutar apps y pruebas.
+- Alcance:
+  - agregar scripts o comandos base para levantar `web`, `api` y PostgreSQL;
+  - agregar comandos base para correr tests y lint;
+  - documentar la secuencia minima de arranque local.
+- Entregables:
+  - comandos base de desarrollo definidos;
+  - flujo local minimo documentado.
+- Criterio de revision:
+  - una persona revisora puede seguir pocos comandos y verificar que la etapa 0 quedo cerrada.
+
+### Orden sugerido dentro de la Etapa 0
+1. Tareas `0.1` y `0.2`.
+2. Tarea `0.3`.
+3. Tareas `0.4` y `0.6`.
+4. Tareas `0.5` y `0.7`.
+5. Tarea `0.8`.
+6. Tarea `0.9`.
+
 ## Etapa 1 - Core de identidad, tenancy y administracion basica
 ### Objetivo
 Construir el nucleo de identidades y limites del sistema, antes de entrar al motor de autorizacion.
