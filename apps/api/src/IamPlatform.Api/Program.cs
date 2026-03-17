@@ -3,6 +3,7 @@ using IamPlatform.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHealthChecks();
 builder.Services
     .AddApplication()
     .AddInfrastructure(builder.Configuration);
@@ -10,5 +11,8 @@ builder.Services
 var app = builder.Build();
 
 app.MapGet("/", () => Results.Ok(new { service = "IamPlatform.Api" }));
+app.MapHealthChecks("/health");
 
 app.Run();
+
+public partial class Program;
