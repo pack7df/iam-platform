@@ -56,7 +56,19 @@ Dejar listo el esqueleto tecnico y cerrar las decisiones minimas que bloquean la
 - Cada tarea de esta etapa deberia vivir idealmente en un PR separado.
 - Si una tarea supera el objetivo normal de tamano, debe dividirse sin mezclar cambios de docs, frontend, backend e infraestructura.
 
+### Estado actual de la Etapa 0
+- `0.1`: completada.
+- `0.2`: completada.
+- `0.3`: completada.
+- `0.4`: completada.
+- `0.5`: pendiente.
+- `0.6`: pendiente.
+- `0.7`: pendiente.
+- `0.8`: pendiente.
+- `0.9`: pendiente.
+
 #### Tarea 0.1 - Cerrar defaults del motor de autorizacion
+- Estado: completada.
 - Objetivo: resolver los dos bloqueos que afectan directamente la semantica del motor de reglas.
 - Alcance:
   - definir que ocurre cuando no existe ninguna regla aplicable;
@@ -73,6 +85,7 @@ Dejar listo el esqueleto tecnico y cerrar las decisiones minimas que bloquean la
   - si, tras ignorar herencias no resueltas, no quedan otras reglas resueltas aplicables, el resultado final es `denegado`.
 
 #### Tarea 0.2 - Cerrar invitaciones y alcance del tenant admin
+- Estado: completada.
 - Objetivo: resolver las definiciones funcionales minimas del modelo de identidad antes de implementar casos de uso.
 - Alcance:
   - definir si la invitacion crea identidad inmediatamente o requiere aceptacion posterior;
@@ -89,6 +102,7 @@ Dejar listo el esqueleto tecnico y cerrar las decisiones minimas que bloquean la
   - si una persona necesita alcance administrativo y tambien ser evaluada por reglas, debe usar identidades separadas.
 
 #### Tarea 0.3 - Crear el esqueleto del monorepo
+- Estado: completada.
 - Objetivo: reflejar en el repositorio la estructura base acordada en `TECH_SPEC.md`.
 - Alcance:
   - crear `apps/`, `infra/` y las rutas base esperadas para `web` y `api`;
@@ -100,6 +114,7 @@ Dejar listo el esqueleto tecnico y cerrar las decisiones minimas que bloquean la
   - la estructura del repo coincide con la arquitectura definida y puede recorrerse sin huecos importantes.
 
 #### Tarea 0.4 - Inicializar `apps/web`
+- Estado: completada.
 - Objetivo: dejar arrancado el frontend administrativo con un shell minimo.
 - Alcance:
   - crear `apps/web` con React + Vite;
@@ -112,6 +127,7 @@ Dejar listo el esqueleto tecnico y cerrar las decisiones minimas que bloquean la
   - `web` arranca localmente y muestra una pagina base sin depender aun del dominio.
 
 #### Tarea 0.5 - Configurar testing base del frontend
+- Estado: pendiente.
 - Objetivo: dejar listo el arnes minimo de pruebas del frontend antes de agregar funcionalidad real.
 - Alcance:
   - integrar `Vitest`;
@@ -124,6 +140,7 @@ Dejar listo el esqueleto tecnico y cerrar las decisiones minimas que bloquean la
   - una persona revisora puede ejecutar los tests del frontend sin configuracion manual oculta.
 
 #### Tarea 0.6 - Inicializar la solucion .NET del backend
+- Estado: pendiente.
 - Objetivo: dejar creada la base tecnica de `apps/api` con sus capas DDD.
 - Alcance:
   - crear la solucion y los proyectos `Api`, `Application`, `Domain` e `Infrastructure`;
