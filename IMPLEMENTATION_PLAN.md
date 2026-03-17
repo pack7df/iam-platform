@@ -22,8 +22,8 @@
 - Integracion externa simple: exponer endpoints suficientes para probar autenticacion y consulta de decision efectiva, sin cerrar aun una federacion completa.
 
 ## Bloqueos funcionales a cerrar antes o durante la Etapa 0
-- Definir el default cuando no existe ninguna regla aplicable.
-- Definir el default cuando la herencia llega a la raiz sin valor explicito.
+- Resuelto en tarea `0.1`: cuando no existe ninguna regla aplicable, el default es `denegado`.
+- Resuelto en tarea `0.1`: cuando la herencia llega a la raiz sin valor explicito, ese resultado se ignora y solo se devuelve `denegado` si no quedan otras reglas resueltas.
 - Definir si las invitaciones crean identidad inmediatamente o requieren aceptacion posterior.
 - Definir si un administrador de tenant tambien puede actuar como usuario final sujeto a reglas.
 
@@ -67,6 +67,10 @@ Dejar listo el esqueleto tecnico y cerrar las decisiones minimas que bloquean la
   - criterios de aceptacion y preguntas abiertas actualizados.
 - Criterio de revision:
   - una persona revisora puede responder ambos escenarios sin asumir comportamiento implicito.
+- Decision cerrada:
+  - el default sin reglas aplicables es `denegado`;
+  - una herencia sin valor explicito hasta la raiz no cuenta como decision resuelta;
+  - si, tras ignorar herencias no resueltas, no quedan otras reglas resueltas aplicables, el resultado final es `denegado`.
 
 #### Tarea 0.2 - Cerrar invitaciones y alcance del tenant admin
 - Objetivo: resolver las definiciones funcionales minimas del modelo de identidad antes de implementar casos de uso.
