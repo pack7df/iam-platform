@@ -73,7 +73,8 @@ Hoy la seguridad suele resolverse por aplicacion, duplicando usuarios, roles, re
 - Si al menos una regla aplicable resuelve en `denegado`, la decision efectiva es `denegado`.
 - La decision efectiva es `permitido` solo cuando todas las reglas aplicables resueltas terminan en `permitido`.
 - Si no existe ninguna regla aplicable para el recurso y la operacion consultados, la decision efectiva es `denegado`.
-- Si una cadena de herencia llega a la raiz sin encontrar un valor explicito para la misma `operacion`, la decision efectiva es `denegado`.
+- Si una cadena de herencia llega a la raiz sin encontrar un valor explicito para la misma `operacion`, ese resultado se ignora y no aporta una decision resuelta.
+- Si despues de ignorar resultados no resueltos por herencia no queda ninguna regla resuelta aplicable, la decision efectiva es `denegado`.
 - Las decisiones efectivas del dominio tenant se evaluan sobre usuarios de tenant, no sobre usuarios de sistema.
 - El acceso administrativo global de usuarios de sistema queda fuera del modelo de reglas del tenant.
 - El acceso administrativo de un administrador de tenant sobre su tenant queda fuera del modelo de reglas de recursos y se concede implicitamente por tipo de usuario.
@@ -121,7 +122,8 @@ Hoy la seguridad suele resolverse por aplicacion, duplicando usuarios, roles, re
 - RF-27: Si existe al menos una regla aplicable que resuelve en `denegado`, la decision efectiva debe ser `denegado`.
 - RF-28: Si todas las reglas aplicables resueltas terminan en `permitido`, la decision efectiva debe ser `permitido`.
 - RF-28a: Si no existe ninguna regla aplicable para un recurso y una operacion, la decision efectiva debe ser `denegado`.
-- RF-28b: Si una cadena de herencia llega a la raiz sin encontrar un valor explicito para la misma operacion, la decision efectiva debe ser `denegado`.
+- RF-28b: Si una cadena de herencia llega a la raiz sin encontrar un valor explicito para la misma operacion, esa regla no debe aportar una decision resuelta.
+- RF-28c: Si, despues de ignorar reglas no resueltas por herencia, no queda ninguna regla resuelta aplicable, la decision efectiva debe ser `denegado`.
 - RF-29: El sistema debe exponer una capacidad de autenticacion central para aplicaciones integradas.
 - RF-30: El sistema debe permitir a una aplicacion consultar la decision efectiva de acceso de un usuario de tenant para un recurso y una operacion concretos.
 - RF-31: El sistema debe permitir que un usuario de servicio administrativo autenticado ejecute acciones de administracion por API dentro de su tenant sin requerir sesion interactiva de un administrador de tenant.
@@ -154,7 +156,9 @@ Hoy la seguridad suele resolverse por aplicacion, duplicando usuarios, roles, re
 - Dado una regla con decision `heredado` para la operacion `read` en un recurso hijo y una decision explicita para `read` en el padre, cuando se consulta la decision efectiva de `read`, entonces el valor del hijo se resuelve a partir del padre.
 - Dado una regla con decision `heredado` para la operacion `read` en un recurso hijo y una decision explicita para `write` en el padre, cuando se consulta la decision efectiva de `read`, entonces el valor de `write` no debe intervenir en la resolucion.
 - Dado un usuario de tenant y un recurso sin ninguna regla aplicable para la operacion consultada, cuando se evalua la decision efectiva, entonces el resultado es `denegado`.
-- Dado una cadena de herencia para la operacion consultada que llega a la raiz sin encontrar un valor explicito, cuando se evalua la decision efectiva, entonces el resultado es `denegado`.
+- Dado una cadena de herencia para la operacion consultada que llega a la raiz sin encontrar un valor explicito y existe otra regla aplicable que resuelve en `permitido`, cuando se evalua la decision efectiva, entonces el resultado final es `permitido`.
+- Dado una cadena de herencia para la operacion consultada que llega a la raiz sin encontrar un valor explicito y existe otra regla aplicable que resuelve en `denegado`, cuando se evalua la decision efectiva, entonces el resultado final es `denegado`.
+- Dado una cadena de herencia para la operacion consultada que llega a la raiz sin encontrar un valor explicito y no existe ninguna otra regla resuelta aplicable, cuando se evalua la decision efectiva, entonces el resultado es `denegado`.
 - Dado una regla con `usuarioTenant = null`, cuando el usuario evaluado posee el rol indicado, entonces la regla aplica por rol.
 - Dado una regla con `rol = null`, cuando el usuario evaluado coincide con el usuario de la regla, entonces la regla aplica por usuario.
 - Dado un cambio administrativo en tenants, usuarios, roles, recursos o reglas de autorizacion, cuando la operacion finaliza, entonces queda registrado un evento de auditoria.
@@ -173,7 +177,7 @@ Hoy la seguridad suele resolverse por aplicacion, duplicando usuarios, roles, re
 - La definicion de operaciones por recurso agrega flexibilidad, pero tambien aumenta el riesgo de inconsistencias semanticas entre aplicaciones.
 - La convivencia entre usuarios de sistema globales y usuarios de tenant exige limites de alcance muy claros para evitar errores de aislamiento.
 - Los privilegios implicitos de usuarios de sistema y administradores de tenant introducen un camino de autorizacion fuera del motor de reglas y deben mantenerse claramente separado.
-- El default `denegado` simplifica la seguridad inicial, pero exigira explicar con claridad si la falta de reglas fue intencional o accidental.
+- Ignorar herencias no resueltas evita falsos negativos sobre reglas explicitas concurrentes, pero aumenta la necesidad de explicar por que algunas reglas no aportaron decision.
 - Las aplicaciones integradas pertenecen a un contexto de confianza comun.
 - El detalle exacto del protocolo de SSO aun no esta decidido.
 

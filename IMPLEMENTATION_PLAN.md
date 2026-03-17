@@ -23,7 +23,7 @@
 
 ## Bloqueos funcionales a cerrar antes o durante la Etapa 0
 - Resuelto en tarea `0.1`: cuando no existe ninguna regla aplicable, el default es `denegado`.
-- Resuelto en tarea `0.1`: cuando la herencia llega a la raiz sin valor explicito, el default es `denegado`.
+- Resuelto en tarea `0.1`: cuando la herencia llega a la raiz sin valor explicito, ese resultado se ignora y solo se devuelve `denegado` si no quedan otras reglas resueltas.
 - Definir si las invitaciones crean identidad inmediatamente o requieren aceptacion posterior.
 - Definir si un administrador de tenant tambien puede actuar como usuario final sujeto a reglas.
 
@@ -69,7 +69,8 @@ Dejar listo el esqueleto tecnico y cerrar las decisiones minimas que bloquean la
   - una persona revisora puede responder ambos escenarios sin asumir comportamiento implicito.
 - Decision cerrada:
   - el default sin reglas aplicables es `denegado`;
-  - el default cuando la herencia no encuentra valor explicito hasta la raiz es `denegado`.
+  - una herencia sin valor explicito hasta la raiz no cuenta como decision resuelta;
+  - si, tras ignorar herencias no resueltas, no quedan otras reglas resueltas aplicables, el resultado final es `denegado`.
 
 #### Tarea 0.2 - Cerrar invitaciones y alcance del tenant admin
 - Objetivo: resolver las definiciones funcionales minimas del modelo de identidad antes de implementar casos de uso.
