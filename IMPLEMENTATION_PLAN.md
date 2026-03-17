@@ -24,8 +24,8 @@
 ## Bloqueos funcionales a cerrar antes o durante la Etapa 0
 - Resuelto en tarea `0.1`: cuando no existe ninguna regla aplicable, el default es `denegado`.
 - Resuelto en tarea `0.1`: cuando la herencia llega a la raiz sin valor explicito, ese resultado se ignora y solo se devuelve `denegado` si no quedan otras reglas resueltas.
-- Definir si las invitaciones crean identidad inmediatamente o requieren aceptacion posterior.
-- Definir si un administrador de tenant tambien puede actuar como usuario final sujeto a reglas.
+- Resuelto en tarea `0.2`: las invitaciones crean una invitacion pendiente y la identidad nace al aceptar.
+- Resuelto en tarea `0.2`: el `TenantAdmin` queda limitado al alcance administrativo y no actua como usuario final.
 
 ## Etapa 0 - Base tecnica y cierre de bloqueos
 ### Objetivo
@@ -83,6 +83,10 @@ Dejar listo el esqueleto tecnico y cerrar las decisiones minimas que bloquean la
   - alcance del `TenantAdmin` documentado.
 - Criterio de revision:
   - el modelo de actores e invitaciones queda implementable sin supuestos extra.
+- Decision cerrada:
+  - las invitaciones generan una invitacion pendiente y la identidad se crea al aceptar;
+  - el `TenantAdmin` solo actua con alcance administrativo;
+  - si una persona necesita alcance administrativo y tambien ser evaluada por reglas, debe usar identidades separadas.
 
 #### Tarea 0.3 - Crear el esqueleto del monorepo
 - Objetivo: reflejar en el repositorio la estructura base acordada en `TECH_SPEC.md`.
