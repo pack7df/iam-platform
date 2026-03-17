@@ -4,3 +4,4 @@ apps/web/dist/
 **/obj/
 *.user
 *.suo
+.vs/
