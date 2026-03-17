@@ -26,8 +26,8 @@ function App() {
         </article>
 
         <article>
-          <h2>Next frontend task</h2>
-          <p>Set up Vitest and the first UI smoke test in task 0.5.</p>
+          <h2>Testing baseline</h2>
+          <p>Vitest and the first UI smoke test are ready for the next frontend work.</p>
         </article>
 
         <article>
