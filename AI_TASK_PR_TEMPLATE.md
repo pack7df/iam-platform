@@ -3,6 +3,7 @@
 ## Uso
 - Completar esta plantilla antes de implementar una tarea.
 - Una tarea debe producir una rama y un PR principal.
+- Todo PR debe abrirse contra `dev`.
 - Objetivo de tamano: hasta 600 lineas cambiadas.
 - Limite maximo: 1000 lineas cambiadas.
 - Si la tarea excede el limite, debe dividirse antes de implementarse.
@@ -12,6 +13,7 @@
 - Task ID:
 - Tipo: `feat` | `fix` | `refactor` | `test` | `docs` | `chore`
 - Titulo corto:
+- Base branch: `dev`
 - Branch name: `<tipo>/<task-id>-<short-slug>`
 - PR title: `[<task-id>] <tipo>: <resumen corto>`
 
@@ -67,6 +69,7 @@
 - [ ] PR dentro del tamano objetivo o con justificacion.
 - [ ] Sin mezclar cambios conceptuales no relacionados.
 - [ ] Documentacion actualizada si corresponde.
+- [ ] PR apuntando a `dev`.
 
 ## 9. Plantilla de PR
 ```md

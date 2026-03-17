@@ -36,6 +36,7 @@
 
 ## Checklist
 - [ ] El titulo del PR sigue el formato `[<task-id>] <tipo>: <resumen corto>`.
+- [ ] El PR apunta a la rama base `dev`.
 - [ ] El PR corresponde a una sola tarea principal.
 - [ ] El PR se mantiene dentro del objetivo de 600 lineas o incluye justificacion.
 - [ ] El PR no supera 1000 lineas cambiadas.
