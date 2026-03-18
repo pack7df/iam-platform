@@ -13,3 +13,8 @@ Comandos base:
 
 - `docker compose --env-file infra/.env -f infra/docker-compose.yml up -d`
 - `docker compose --env-file infra/.env -f infra/docker-compose.yml down`
+
+Desde la raiz tambien puedes usar:
+
+- `npm run infra:up`
+- `npm run infra:down`

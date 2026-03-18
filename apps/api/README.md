@@ -17,6 +17,12 @@ Comando base de compilacion:
 
 - `dotnet build IamPlatform.sln`
 
+Comandos base de desarrollo:
+
+- `dotnet run --project apps/api/src/IamPlatform.Api/IamPlatform.Api.csproj --urls http://localhost:5125`
+- `dotnet test apps/api/tests/IamPlatform.UnitTests/IamPlatform.UnitTests.csproj`
+- `dotnet test apps/api/tests/IamPlatform.IntegrationTests/IamPlatform.IntegrationTests.csproj`
+
 ## Configuracion local
 
 - La API toma la cadena principal desde `ConnectionStrings:IamPlatform`.
