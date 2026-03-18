@@ -1,0 +1,15 @@
+{
+  "name": "iam-platform",
+  "private": true,
+  "scripts": {
+    "dev:web": "npm --prefix apps/web run dev",
+    "dev:api": "dotnet run --project apps/api/src/IamPlatform.Api/IamPlatform.Api.csproj --urls http://localhost:5125",
+    "infra:up": "docker compose --env-file infra/.env.example -f infra/docker-compose.yml up -d",
+    "infra:down": "docker compose --env-file infra/.env.example -f infra/docker-compose.yml down",
+    "build:web": "npm --prefix apps/web run build",
+    "build:api": "dotnet build IamPlatform.sln",
+    "test:web": "npm --prefix apps/web run test",
+    "test:api": "dotnet test apps/api/tests/IamPlatform.UnitTests/IamPlatform.UnitTests.csproj && dotnet test apps/api/tests/IamPlatform.IntegrationTests/IamPlatform.IntegrationTests.csproj",
+    "lint:web": "npm --prefix apps/web run lint"
+  }
+}
