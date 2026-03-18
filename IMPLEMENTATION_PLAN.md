@@ -204,6 +204,184 @@ Construir el nucleo de identidades y limites del sistema, antes de entrar al mot
 - Se puede invitar otro tenant admin y otro system user.
 - Los privilegios administrativos implicitos quedan separados del motor de reglas.
 
+### Desglose propuesto en tareas revisables
+- La etapa debe priorizar dominio y tests antes de casos de uso y API.
+- Cada tarea deberia producir un PR pequeno, idealmente por agregado o caso de uso.
+- Cuando una tarea combine dominio + application, el alcance debe seguir siendo una sola capacidad verificable.
+
+#### Tarea 1.1 - Modelar `Tenant`
+- Objetivo: introducir el agregado base del aislamiento funcional del sistema.
+- Alcance:
+  - crear la entidad o agregado `Tenant`;
+  - definir identidad, nombre, estado y reglas de activacion/desactivacion;
+  - cubrir invariantes minimas con tests unitarios.
+- Entregables:
+  - modelo de dominio de `Tenant`;
+  - tests unitarios del agregado.
+- Branch sugerida: `feat/task-1.1-tenant-aggregate`
+- PR title sugerido: `[task-1.1] feat: add tenant aggregate`
+- Criterio de revision:
+  - el agregado expresa claramente el limite de tenant y sus invariantes minimas.
+
+#### Tarea 1.2 - Modelar `TenantUser` y tipos de usuario
+- Objetivo: representar las identidades que viven dentro de un tenant.
+- Alcance:
+  - crear `TenantUser`;
+  - modelar tipos `TenantAdmin`, `EndUser` y `ServiceAdmin`;
+  - asegurar pertenencia exacta a un tenant;
+  - cubrir invariantes con tests unitarios.
+- Entregables:
+  - modelo de dominio de `TenantUser` y su tipo;
+  - tests unitarios de pertenencia y tipos.
+- Branch sugerida: `feat/task-1.2-tenant-user-types`
+- PR title sugerido: `[task-1.2] feat: add tenant user types`
+- Criterio de revision:
+  - el modelo distingue sin ambiguedad usuarios administrativos, finales y de servicio dentro del tenant.
+
+#### Tarea 1.3 - Modelar `SystemUser`
+- Objetivo: introducir la identidad administrativa global fuera del alcance tenant.
+- Alcance:
+  - crear `SystemUser`;
+  - reflejar que no pertenece a ningun tenant;
+  - cubrir invariantes y estado minimo con tests unitarios.
+- Entregables:
+  - modelo de dominio de `SystemUser`;
+  - tests unitarios del actor global.
+- Branch sugerida: `feat/task-1.3-system-user`
+- PR title sugerido: `[task-1.3] feat: add system user model`
+- Criterio de revision:
+  - el actor global queda separado del dominio tenant sin atajos ambiguos.
+
+#### Tarea 1.4 - Modelar `Role` y `Application`
+- Objetivo: completar las entidades base administrativas dentro del tenant.
+- Alcance:
+  - crear `Role` y `Application`;
+  - asegurar pertenencia estricta al tenant;
+  - cubrir invariantes minimas con tests unitarios.
+- Entregables:
+  - modelos de dominio de `Role` y `Application`;
+  - tests unitarios asociados.
+- Branch sugerida: `feat/task-1.4-role-and-application`
+- PR title sugerido: `[task-1.4] feat: add role and application models`
+- Criterio de revision:
+  - ambos conceptos quedan listos para ser usados por etapas posteriores sin mezclar autorizacion aun.
+
+#### Tarea 1.5 - Modelar invitaciones
+- Objetivo: capturar el flujo pendiente de incorporacion de identidades administrativas.
+- Alcance:
+  - crear el modelo de invitacion para `SystemUser` y `TenantAdmin`;
+  - reflejar estado pendiente y aceptacion posterior;
+  - impedir que la invitacion cree identidad activa inmediatamente;
+  - cubrir reglas de negocio con tests unitarios.
+- Entregables:
+  - modelo de dominio de invitaciones;
+  - tests unitarios de emision y aceptacion.
+- Branch sugerida: `feat/task-1.5-invitations-model`
+- PR title sugerido: `[task-1.5] feat: add invitation model`
+- Criterio de revision:
+  - una persona revisora puede ver claramente que invitar no equivale a crear identidad.
+
+#### Tarea 1.6 - Bootstrap del primer `SystemUser`
+- Objetivo: modelar la inicializacion unica del primer usuario global.
+- Alcance:
+  - crear la capacidad de bootstrap del primer `SystemUser`;
+  - asegurar que solo exista uno en el arranque inicial;
+  - cubrir el comportamiento con tests unitarios o de application liviana.
+- Entregables:
+  - servicio o caso de uso de bootstrap;
+  - tests de comportamiento del bootstrap unico.
+- Branch sugerida: `feat/task-1.6-system-user-bootstrap`
+- PR title sugerido: `[task-1.6] feat: add system user bootstrap`
+- Criterio de revision:
+  - el flujo deja claro cuando el bootstrap es valido y cuando debe rechazarse.
+
+#### Tarea 1.7 - Caso de uso de registro inicial de `TenantAdmin`
+- Objetivo: habilitar el alta inicial de un tenant junto con su administrador.
+- Alcance:
+  - crear el caso de uso que registra un `TenantAdmin` y crea su `Tenant`;
+  - respetar el modelo de identidad administrativa separada del usuario final;
+  - cubrir escenarios principales con tests de application.
+- Entregables:
+  - caso de uso de registro inicial;
+  - tests de application del flujo de registro.
+- Branch sugerida: `feat/task-1.7-tenant-admin-registration`
+- PR title sugerido: `[task-1.7] feat: add tenant admin registration`
+- Criterio de revision:
+  - el flujo crea tenant + admin de forma coherente y sin supuestos ocultos.
+
+#### Tarea 1.8 - Caso de uso de invitacion de `SystemUser`
+- Objetivo: habilitar la emision de invitaciones para administradores globales.
+- Alcance:
+  - crear el caso de uso para invitar otro `SystemUser`;
+  - emitir solo invitacion pendiente;
+  - cubrir validaciones principales con tests de application.
+- Entregables:
+  - caso de uso de invitacion de usuarios globales;
+  - tests de application asociados.
+- Branch sugerida: `feat/task-1.8-system-user-invite`
+- PR title sugerido: `[task-1.8] feat: add system user invitations`
+- Criterio de revision:
+  - el caso de uso deja explicito que la identidad nace solo al aceptar.
+
+#### Tarea 1.9 - Caso de uso de invitacion de `TenantAdmin`
+- Objetivo: habilitar la emision de invitaciones administrativas dentro del tenant.
+- Alcance:
+  - crear el caso de uso para invitar otro `TenantAdmin`;
+  - limitar el alcance al mismo tenant;
+  - emitir solo invitacion pendiente;
+  - cubrir reglas principales con tests de application.
+- Entregables:
+  - caso de uso de invitacion de tenant admins;
+  - tests de application asociados.
+- Branch sugerida: `feat/task-1.9-tenant-admin-invite`
+- PR title sugerido: `[task-1.9] feat: add tenant admin invitations`
+- Criterio de revision:
+  - el flujo conserva correctamente el tenant de origen y no crea identidad activa inmediata.
+
+#### Tarea 1.10 - Privilegios implicitos de `SystemUser` y `TenantAdmin`
+- Objetivo: dejar explicita la separacion entre privilegios administrativos y futuro motor de reglas.
+- Alcance:
+  - modelar o encapsular los privilegios implicitos de `SystemUser`;
+  - modelar o encapsular los privilegios implicitos de `TenantAdmin`;
+  - dejar fuera del motor de autorizacion de recursos cualquier chequeo de este tipo;
+  - cubrir comportamiento con tests.
+- Entregables:
+  - politica o servicio para privilegios implicitos;
+  - tests que prueban la separacion con respecto al motor de reglas futuro.
+- Branch sugerida: `feat/task-1.10-implicit-admin-privileges`
+- PR title sugerido: `[task-1.10] feat: add implicit admin privileges`
+- Criterio de revision:
+  - el camino administrativo implicito queda aislado del modelo de reglas tenant.
+
+#### Tarea 1.11 - Endpoints minimos de Etapa 1
+- Objetivo: exponer una API basica para validar la etapa de identidad y tenancy.
+- Alcance:
+  - exponer endpoints minimos para bootstrap, registro inicial e invitaciones principales;
+  - mantener el alcance reducido a los casos de uso ya modelados;
+  - cubrir el comportamiento con integration tests de API.
+- Entregables:
+  - endpoints HTTP minimos de la etapa;
+  - integration tests de arranque y flujos principales.
+- Branch sugerida: `feat/task-1.11-identity-api-minimum`
+- PR title sugerido: `[task-1.11] feat: add identity api endpoints`
+- Criterio de revision:
+  - una persona revisora puede ejecutar la API y comprobar bootstrap, registro e invitaciones basicas.
+
+### Orden recomendado dentro de la Etapa 1
+1. Tareas `1.1`, `1.2` y `1.3`.
+2. Tareas `1.4` y `1.5`.
+3. Tarea `1.6`.
+4. Tareas `1.7`, `1.8` y `1.9`.
+5. Tarea `1.10`.
+6. Tarea `1.11`.
+
+### Recomendaciones de corte para IA en la Etapa 1
+- Priorizar un agregado o caso de uso por PR.
+- Empezar cada tarea por tests de dominio o application segun corresponda.
+- No mezclar persistencia fuerte de PostgreSQL ni EF Core en esta etapa salvo necesidad justificada.
+- No introducir aun reglas de autorizacion de recursos; esa responsabilidad pertenece a la Etapa 2.
+- Vigilar especialmente tres limites: `SystemUser` fuera de tenant, `TenantAdmin` fuera del modelo de usuario final y las invitaciones como identidades pendientes.
+
 ## Etapa 2 - Core de autorizacion y arbol de recursos
 ### Objetivo
 Construir y validar el corazon del producto: recursos, operaciones, reglas y decision efectiva.
