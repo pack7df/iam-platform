@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\IamPlatform.Domain\IamPlatform.Domain.csproj" />
+    <ProjectReference Include="..\..\src\IamPlatform.Application\IamPlatform.Application.csproj" />
   </ItemGroup>
 
 </Project>
