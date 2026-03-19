@@ -1,4 +1,6 @@
 using IamPlatform.Application;
+using IamPlatform.Application.Identity;
+using IamPlatform.Application.Tenants;
 using IamPlatform.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +14,65 @@ var app = builder.Build();
 
 app.MapGet("/", () => Results.Ok(new { service = "IamPlatform.Api" }));
 app.MapHealthChecks("/health");
+app.MapPost("/bootstrap/system-user", async (BootstrapSystemUserRequest request, SystemUserBootstrapper bootstrapper, CancellationToken cancellationToken) =>
+{
+    var result = await bootstrapper.BootstrapAsync(request.SystemUserId, cancellationToken);
+
+    return result.IsCreated
+        ? Results.Created($"/system-users/{result.SystemUser!.Id}", new
+        {
+            id = result.SystemUser.Id,
+            isActive = result.SystemUser.IsActive,
+            bootstrapCompleted = true
+        })
+        : Results.Conflict(new { message = "Initial system user bootstrap has already been completed." });
+})
+.WithTags("Bootstrap");
+app.MapPost("/tenants/registration", async (RegisterTenantAdminRequest request, TenantAdminRegistration registration, CancellationToken cancellationToken) =>
+{
+    var result = await registration.RegisterAsync(request.TenantId, request.TenantName, request.TenantAdminId, cancellationToken);
+
+    return Results.Created($"/tenants/{result.Tenant.Id}", new
+    {
+        tenant = new { id = result.Tenant.Id, name = result.Tenant.Name, isActive = result.Tenant.IsActive },
+        tenantAdmin = new { id = result.TenantAdmin.Id, tenantId = result.TenantAdmin.TenantId, type = result.TenantAdmin.Type.ToString(), isActive = result.TenantAdmin.IsActive }
+    });
+});
+app.MapPost("/system-user-invitations", async (InviteSystemUserRequest request, SystemUserInvitation invitationService, CancellationToken cancellationToken) =>
+{
+    var result = await invitationService.InviteAsync(request.InvitationId, request.InvitedSystemUserId, cancellationToken);
+
+    return Results.Created($"/system-user-invitations/{result.Invitation.Id}", new
+    {
+        id = result.Invitation.Id,
+        invitedIdentityId = result.Invitation.InvitedIdentityId,
+        targetType = result.Invitation.TargetType.ToString(),
+        tenantId = result.Invitation.TenantId,
+        status = result.Invitation.Status.ToString()
+    });
+});
+app.MapPost("/tenant-admin-invitations", async (InviteTenantAdminRequest request, TenantAdminInvitation invitationService, CancellationToken cancellationToken) =>
+{
+    var result = await invitationService.InviteAsync(request.InvitationId, request.TenantId, request.InvitedTenantAdminId, cancellationToken);
+
+    return Results.Created($"/tenant-admin-invitations/{result.Invitation.Id}", new
+    {
+        id = result.Invitation.Id,
+        invitedIdentityId = result.Invitation.InvitedIdentityId,
+        targetType = result.Invitation.TargetType.ToString(),
+        tenantId = result.Invitation.TenantId,
+        status = result.Invitation.Status.ToString()
+    });
+});
 
 app.Run();
 
 public partial class Program;
+
+public sealed record BootstrapSystemUserRequest(string SystemUserId);
+
+public sealed record RegisterTenantAdminRequest(string TenantId, string TenantName, string TenantAdminId);
+
+public sealed record InviteSystemUserRequest(string InvitationId, string InvitedSystemUserId);
+
+public sealed record InviteTenantAdminRequest(string InvitationId, string TenantId, string InvitedTenantAdminId);
