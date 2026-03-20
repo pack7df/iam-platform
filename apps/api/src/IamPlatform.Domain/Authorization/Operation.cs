@@ -4,10 +4,10 @@ namespace IamPlatform.Domain.Authorization;
 
 public sealed class Operation
 {
-    private Operation(string id, string resourceId, string key, string name, bool isActive)
+    private Operation(string id, string applicationId, string key, string name, bool isActive)
     {
         Id = Guard.Required(id, nameof(id), "Operation id is required.");
-        ResourceId = Guard.Required(resourceId, nameof(resourceId), "Resource id is required.");
+        ApplicationId = Guard.Required(applicationId, nameof(applicationId), "Application id is required.");
         Key = Guard.Required(key, nameof(key), "Operation key is required.");
         Name = Guard.Required(name, nameof(name), "Operation name is required.");
         IsActive = isActive;
@@ -15,7 +15,7 @@ public sealed class Operation
 
     public string Id { get; }
 
-    public string ResourceId { get; }
+    public string ApplicationId { get; }
 
     public string Key { get; private set; }
 
@@ -23,9 +23,9 @@ public sealed class Operation
 
     public bool IsActive { get; private set; }
 
-    public static Operation Create(string id, string resourceId, string key, string name)
+    public static Operation Create(string id, string applicationId, string key, string name)
     {
-        return new Operation(id, resourceId, key, name, true);
+        return new Operation(id, applicationId, key, name, true);
     }
 
     public void Rename(string name)

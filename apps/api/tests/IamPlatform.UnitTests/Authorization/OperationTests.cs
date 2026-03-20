@@ -7,12 +7,12 @@ namespace IamPlatform.UnitTests.Authorization;
 public sealed class OperationTests
 {
     [Fact]
-    public void Create_Should_Set_Id_ResourceId_Key_Name_And_Active_Status()
+    public void Create_Should_Set_Id_ApplicationId_Key_Name_And_Active_Status()
     {
-        var operation = Operation.Create("operation-001", "resource-001", "read", "Read");
+        var operation = Operation.Create("operation-001", "app-001", "read", "Read");
 
         operation.Id.Should().Be("operation-001");
-        operation.ResourceId.Should().Be("resource-001");
+        operation.ApplicationId.Should().Be("app-001");
         operation.Key.Should().Be("read");
         operation.Name.Should().Be("Read");
         operation.IsActive.Should().BeTrue();
@@ -23,7 +23,7 @@ public sealed class OperationTests
     [InlineData(" ")]
     public void Create_Should_Reject_Invalid_Id(string invalidId)
     {
-        var act = () => Operation.Create(invalidId, "resource-001", "read", "Read");
+        var act = () => Operation.Create(invalidId, "app-001", "read", "Read");
 
         act.Should().Throw<ArgumentException>()
             .WithMessage("Operation id is required.*");
@@ -32,12 +32,12 @@ public sealed class OperationTests
     [Theory]
     [InlineData("")]
     [InlineData(" ")]
-    public void Create_Should_Reject_Invalid_ResourceId(string invalidResourceId)
+    public void Create_Should_Reject_Invalid_ApplicationId(string invalidApplicationId)
     {
-        var act = () => Operation.Create("operation-001", invalidResourceId, "read", "Read");
+        var act = () => Operation.Create("operation-001", invalidApplicationId, "read", "Read");
 
         act.Should().Throw<ArgumentException>()
-            .WithMessage("Resource id is required.*");
+            .WithMessage("Application id is required.*");
     }
 
     [Theory]
@@ -45,7 +45,7 @@ public sealed class OperationTests
     [InlineData(" ")]
     public void Create_Should_Reject_Invalid_Key(string invalidKey)
     {
-        var act = () => Operation.Create("operation-001", "resource-001", invalidKey, "Read");
+        var act = () => Operation.Create("operation-001", "app-001", invalidKey, "Read");
 
         act.Should().Throw<ArgumentException>()
             .WithMessage("Operation key is required.*");
@@ -56,7 +56,7 @@ public sealed class OperationTests
     [InlineData(" ")]
     public void Create_Should_Reject_Invalid_Name(string invalidName)
     {
-        var act = () => Operation.Create("operation-001", "resource-001", "read", invalidName);
+        var act = () => Operation.Create("operation-001", "app-001", "read", invalidName);
 
         act.Should().Throw<ArgumentException>()
             .WithMessage("Operation name is required.*");
@@ -65,7 +65,7 @@ public sealed class OperationTests
     [Fact]
     public void Rename_Should_Update_Name()
     {
-        var operation = Operation.Create("operation-001", "resource-001", "read", "Read");
+        var operation = Operation.Create("operation-001", "app-001", "read", "Read");
 
         operation.Rename("View");
 
@@ -75,7 +75,7 @@ public sealed class OperationTests
     [Fact]
     public void ChangeKey_Should_Update_Key()
     {
-        var operation = Operation.Create("operation-001", "resource-001", "read", "Read");
+        var operation = Operation.Create("operation-001", "app-001", "read", "Read");
 
         operation.ChangeKey("view");
 
@@ -85,7 +85,7 @@ public sealed class OperationTests
     [Fact]
     public void Deactivate_Should_Set_Inactive_Status()
     {
-        var operation = Operation.Create("operation-001", "resource-001", "read", "Read");
+        var operation = Operation.Create("operation-001", "app-001", "read", "Read");
 
         operation.Deactivate();
 
@@ -95,7 +95,7 @@ public sealed class OperationTests
     [Fact]
     public void Activate_Should_Set_Active_Status()
     {
-        var operation = Operation.Create("operation-001", "resource-001", "read", "Read");
+        var operation = Operation.Create("operation-001", "app-001", "read", "Read");
         operation.Deactivate();
 
         operation.Activate();
