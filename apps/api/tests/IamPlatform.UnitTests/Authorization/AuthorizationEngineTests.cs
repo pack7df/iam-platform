@@ -7,35 +7,36 @@ namespace IamPlatform.UnitTests.Authorization;
 
 public sealed class AuthorizationEngineTests
 {
-    private readonly IAuthorizationEngine _engine = new AuthorizationEngine();
-
     [Fact]
     public async Task EvaluateAsync_Should_Allow_When_Single_Allow_Rule_Matches()
     {
         // Arrange
-        var user = User.Create("user-001", "tenant-001", UserType.EndUser);
-        var resource = Resource.CreateRoot("resource-001", "app-001", "Dashboard", "dashboard");
-        var resources = new[] { resource };
-        var operation = Operation.Create("operation-001", "app-001", "read", "Read");
+        var userId = "user-001";
+        var resourceId = "resource-001";
+        var operationId = "operation-001";
+
+        var user = User.Create(userId, "tenant-001", UserType.EndUser);
+        var resource = Resource.CreateRoot(resourceId, "app-001", "Dashboard", "dashboard");
+        var operation = Operation.Create(operationId, "app-001", "read", "Read");
         var rule = AuthorizationRule.CreateForUser(
             "rule-001",
             user,
             resource,
             operation,
             AuthorizationRuleDecision.Allow);
-        var context = new AuthorizationEvaluationContext(
-            "user-001",
-            "resource-001",
-            "operation-001",
-            Array.Empty<string>());
+
+        var resourceRepo = new FakeResourceRepository(new[] { resource });
+        var ruleRepo = new FakeAuthorizationRuleRepository(new[] { rule });
+        var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(Array.Empty<string>());
+        var engine = new AuthorizationEngine(ruleRepo, resourceRepo, userRoleAssignmentRepo);
 
         // Act
-        var result = await _engine.EvaluateAsync(context, new[] { rule }, resources);
+        var result = await engine.EvaluateAsync(userId, resourceId, operationId);
 
         // Assert
         result.IsAuthorized.Should().BeTrue();
         result.Decision.Should().Be(AuthorizationRuleDecision.Allow);
-        result.ResolvedResourceId.Should().Be("resource-001");
+        result.ResolvedResourceId.Should().Be(resourceId);
         result.AppliedRules.Should().ContainSingle();
     }
 
@@ -43,49 +44,55 @@ public sealed class AuthorizationEngineTests
     public async Task EvaluateAsync_Should_Deny_When_Single_Deny_Rule_Matches()
     {
         // Arrange
-        var user = User.Create("user-001", "tenant-001", UserType.EndUser);
-        var resource = Resource.CreateRoot("resource-001", "app-001", "Dashboard", "dashboard");
-        var resources = new[] { resource };
-        var operation = Operation.Create("operation-001", "app-001", "read", "Read");
+        var userId = "user-001";
+        var resourceId = "resource-001";
+        var operationId = "operation-001";
+
+        var user = User.Create(userId, "tenant-001", UserType.EndUser);
+        var resource = Resource.CreateRoot(resourceId, "app-001", "Dashboard", "dashboard");
+        var operation = Operation.Create(operationId, "app-001", "read", "Read");
         var rule = AuthorizationRule.CreateForUser(
             "rule-001",
             user,
             resource,
             operation,
             AuthorizationRuleDecision.Deny);
-        var context = new AuthorizationEvaluationContext(
-            "user-001",
-            "resource-001",
-            "operation-001",
-            Array.Empty<string>());
+
+        var resourceRepo = new FakeResourceRepository(new[] { resource });
+        var ruleRepo = new FakeAuthorizationRuleRepository(new[] { rule });
+        var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(Array.Empty<string>());
+        var engine = new AuthorizationEngine(ruleRepo, resourceRepo, userRoleAssignmentRepo);
 
         // Act
-        var result = await _engine.EvaluateAsync(context, new[] { rule }, resources);
+        var result = await engine.EvaluateAsync(userId, resourceId, operationId);
 
         // Assert
         result.IsAuthorized.Should().BeFalse();
         result.Decision.Should().Be(AuthorizationRuleDecision.Deny);
-        result.ResolvedResourceId.Should().Be("resource-001");
+        result.ResolvedResourceId.Should().Be(resourceId);
     }
 
     [Fact]
     public async Task EvaluateAsync_Should_Allow_When_Multiple_Allow_Rules_All_Allow()
     {
         // Arrange
-        var user = User.Create("user-001", "tenant-001", UserType.EndUser);
-        var resource = Resource.CreateRoot("resource-001", "app-001", "Dashboard", "dashboard");
-        var resources = new[] { resource };
-        var operation = Operation.Create("operation-001", "app-001", "read", "Read");
+        var userId = "user-001";
+        var resourceId = "resource-001";
+        var operationId = "operation-001";
+
+        var user = User.Create(userId, "tenant-001", UserType.EndUser);
+        var resource = Resource.CreateRoot(resourceId, "app-001", "Dashboard", "dashboard");
+        var operation = Operation.Create(operationId, "app-001", "read", "Read");
         var rule1 = AuthorizationRule.CreateForUser("rule-001", user, resource, operation, AuthorizationRuleDecision.Allow);
         var rule2 = AuthorizationRule.CreateForUser("rule-002", user, resource, operation, AuthorizationRuleDecision.Allow);
-        var context = new AuthorizationEvaluationContext(
-            "user-001",
-            "resource-001",
-            "operation-001",
-            Array.Empty<string>());
+
+        var resourceRepo = new FakeResourceRepository(new[] { resource });
+        var ruleRepo = new FakeAuthorizationRuleRepository(new[] { rule1, rule2 });
+        var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(Array.Empty<string>());
+        var engine = new AuthorizationEngine(ruleRepo, resourceRepo, userRoleAssignmentRepo);
 
         // Act
-        var result = await _engine.EvaluateAsync(context, new[] { rule1, rule2 }, resources);
+        var result = await engine.EvaluateAsync(userId, resourceId, operationId);
 
         // Assert
         result.IsAuthorized.Should().BeTrue();
@@ -96,21 +103,24 @@ public sealed class AuthorizationEngineTests
     public async Task EvaluateAsync_Should_Deny_When_Any_Deny_Rule_Among_Allows()
     {
         // Arrange
-        var user = User.Create("user-001", "tenant-001", UserType.EndUser);
-        var resource = Resource.CreateRoot("resource-001", "app-001", "Dashboard", "dashboard");
-        var resources = new[] { resource };
-        var operation = Operation.Create("operation-001", "app-001", "read", "Read");
+        var userId = "user-001";
+        var resourceId = "resource-001";
+        var operationId = "operation-001";
+
+        var user = User.Create(userId, "tenant-001", UserType.EndUser);
+        var resource = Resource.CreateRoot(resourceId, "app-001", "Dashboard", "dashboard");
+        var operation = Operation.Create(operationId, "app-001", "read", "Read");
         var rule1 = AuthorizationRule.CreateForUser("rule-001", user, resource, operation, AuthorizationRuleDecision.Allow);
         var rule2 = AuthorizationRule.CreateForUser("rule-002", user, resource, operation, AuthorizationRuleDecision.Deny);
         var rule3 = AuthorizationRule.CreateForUser("rule-003", user, resource, operation, AuthorizationRuleDecision.Allow);
-        var context = new AuthorizationEvaluationContext(
-            "user-001",
-            "resource-001",
-            "operation-001",
-            Array.Empty<string>());
+
+        var resourceRepo = new FakeResourceRepository(new[] { resource });
+        var ruleRepo = new FakeAuthorizationRuleRepository(new[] { rule1, rule2, rule3 });
+        var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(Array.Empty<string>());
+        var engine = new AuthorizationEngine(ruleRepo, resourceRepo, userRoleAssignmentRepo);
 
         // Act
-        var result = await _engine.EvaluateAsync(context, new[] { rule1, rule2, rule3 }, resources);
+        var result = await engine.EvaluateAsync(userId, resourceId, operationId);
 
         // Assert
         result.IsAuthorized.Should().BeFalse();
@@ -121,15 +131,18 @@ public sealed class AuthorizationEngineTests
     public async Task EvaluateAsync_Should_Deny_By_Default_When_No_Rules_Match()
     {
         // Arrange
-        var context = new AuthorizationEvaluationContext(
-            "user-001",
-            "resource-001",
-            "operation-001",
-            Array.Empty<string>());
-        var resources = Array.Empty<Resource>();
+        var userId = "user-001";
+        var resourceId = "resource-001";
+        var operationId = "operation-001";
+
+        var resource = Resource.CreateRoot(resourceId, "app-001", "Dashboard", "dashboard");
+        var resourceRepo = new FakeResourceRepository(new[] { resource });
+        var ruleRepo = new FakeAuthorizationRuleRepository(Array.Empty<AuthorizationRule>());
+        var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(Array.Empty<string>());
+        var engine = new AuthorizationEngine(ruleRepo, resourceRepo, userRoleAssignmentRepo);
 
         // Act
-        var result = await _engine.EvaluateAsync(context, Array.Empty<AuthorizationRule>(), resources);
+        var result = await engine.EvaluateAsync(userId, resourceId, operationId);
 
         // Assert
         result.IsAuthorized.Should().BeFalse();
@@ -141,11 +154,14 @@ public sealed class AuthorizationEngineTests
     public async Task EvaluateAsync_Should_Resolve_Inheritance_From_Parent()
     {
         // Arrange
-        var user = User.Create("user-001", "tenant-001", UserType.EndUser);
+        var userId = "user-001";
+        var resourceId = "resource-child";
+        var operationId = "operation-read";
+
+        var user = User.Create(userId, "tenant-001", UserType.EndUser);
         var root = Resource.CreateRoot("resource-root", "app-001", "Dashboard", "dashboard");
         var child = Resource.CreateChild("resource-child", "app-001", "Users", "users", root.Id);
-        var resources = new[] { root, child };
-        var operation = Operation.Create("operation-read", "app-001", "read", "Read");
+        var operation = Operation.Create(operationId, "app-001", "read", "Read");
         var inheritedRule = AuthorizationRule.CreateForUser(
             "rule-child",
             user,
@@ -158,14 +174,14 @@ public sealed class AuthorizationEngineTests
             root,
             operation,
             AuthorizationRuleDecision.Deny);
-        var context = new AuthorizationEvaluationContext(
-            "user-001",
-            "resource-child",
-            "operation-read",
-            Array.Empty<string>());
+
+        var resourceRepo = new FakeResourceRepository(new[] { root, child });
+        var ruleRepo = new FakeAuthorizationRuleRepository(new[] { inheritedRule, parentRule });
+        var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(Array.Empty<string>());
+        var engine = new AuthorizationEngine(ruleRepo, resourceRepo, userRoleAssignmentRepo);
 
         // Act
-        var result = await _engine.EvaluateAsync(context, new[] { inheritedRule, parentRule }, resources);
+        var result = await engine.EvaluateAsync(userId, resourceId, operationId);
 
         // Assert
         result.IsAuthorized.Should().BeFalse();
@@ -178,23 +194,26 @@ public sealed class AuthorizationEngineTests
     public async Task EvaluateAsync_Should_Resolve_Inheritance_Through_Multiple_Levels()
     {
         // Arrange
-        var user = User.Create("user-001", "tenant-001", UserType.EndUser);
+        var userId = "user-001";
+        var resourceId = "resource-child";
+        var operationId = "operation-read";
+
+        var user = User.Create(userId, "tenant-001", UserType.EndUser);
         var root = Resource.CreateRoot("resource-root", "app-001", "Dashboard", "dashboard");
         var middle = Resource.CreateChild("resource-middle", "app-001", "Admin", "admin", root.Id);
         var child = Resource.CreateChild("resource-child", "app-001", "Users", "users", middle.Id);
-        var resources = new[] { root, middle, child };
-        var operation = Operation.Create("operation-read", "app-001", "read", "Read");
+        var operation = Operation.Create(operationId, "app-001", "read", "Read");
         var childRule = AuthorizationRule.CreateForUser("rule-child", user, child, operation, AuthorizationRuleDecision.Inherit);
         var middleRule = AuthorizationRule.CreateForUser("rule-middle", user, middle, operation, AuthorizationRuleDecision.Inherit);
         var rootRule = AuthorizationRule.CreateForUser("rule-root", user, root, operation, AuthorizationRuleDecision.Allow);
-        var context = new AuthorizationEvaluationContext(
-            "user-001",
-            "resource-child",
-            "operation-read",
-            Array.Empty<string>());
+
+        var resourceRepo = new FakeResourceRepository(new[] { root, middle, child });
+        var ruleRepo = new FakeAuthorizationRuleRepository(new[] { childRule, middleRule, rootRule });
+        var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(Array.Empty<string>());
+        var engine = new AuthorizationEngine(ruleRepo, resourceRepo, userRoleAssignmentRepo);
 
         // Act
-        var result = await _engine.EvaluateAsync(context, new[] { childRule, middleRule, rootRule }, resources);
+        var result = await engine.EvaluateAsync(userId, resourceId, operationId);
 
         // Assert
         result.IsAuthorized.Should().BeTrue();
@@ -207,10 +226,13 @@ public sealed class AuthorizationEngineTests
     public async Task EvaluateAsync_Should_Ignore_Rules_For_Different_Operation()
     {
         // Arrange
-        var user = User.Create("user-001", "tenant-001", UserType.EndUser);
-        var resource = Resource.CreateRoot("resource-001", "app-001", "Dashboard", "dashboard");
-        var resources = new[] { resource };
-        var readOp = Operation.Create("operation-read", "app-001", "read", "Read");
+        var userId = "user-001";
+        var resourceId = "resource-001";
+        var operationId = "operation-read";
+
+        var user = User.Create(userId, "tenant-001", UserType.EndUser);
+        var resource = Resource.CreateRoot(resourceId, "app-001", "Dashboard", "dashboard");
+        var readOp = Operation.Create(operationId, "app-001", "read", "Read");
         var writeOp = Operation.Create("operation-write", "app-001", "write", "Write");
         var inheritedRule = AuthorizationRule.CreateForUser(
             "rule-child",
@@ -224,14 +246,14 @@ public sealed class AuthorizationEngineTests
             resource,
             writeOp,
             AuthorizationRuleDecision.Allow);
-        var context = new AuthorizationEvaluationContext(
-            "user-001",
-            "resource-001",
-            "operation-read",
-            Array.Empty<string>());
+
+        var resourceRepo = new FakeResourceRepository(new[] { resource });
+        var ruleRepo = new FakeAuthorizationRuleRepository(new[] { inheritedRule, parentRule });
+        var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(Array.Empty<string>());
+        var engine = new AuthorizationEngine(ruleRepo, resourceRepo, userRoleAssignmentRepo);
 
         // Act
-        var result = await _engine.EvaluateAsync(context, new[] { inheritedRule, parentRule }, resources);
+        var result = await engine.EvaluateAsync(userId, resourceId, operationId);
 
         // Assert
         result.IsAuthorized.Should().BeFalse();
@@ -242,25 +264,29 @@ public sealed class AuthorizationEngineTests
     public async Task EvaluateAsync_Should_Respect_RoleBased_Rules()
     {
         // Arrange
-        var user = User.Create("user-001", "tenant-001", UserType.EndUser);
-        var role = Role.Create("role-001", "tenant-001", "Operators");
-        var resource = Resource.CreateRoot("resource-001", "app-001", "Dashboard", "dashboard");
-        var resources = new[] { resource };
-        var operation = Operation.Create("operation-001", "app-001", "read", "Read");
+        var userId = "user-001";
+        var resourceId = "resource-001";
+        var operationId = "operation-001";
+        var roleId = "role-001";
+
+        var user = User.Create(userId, "tenant-001", UserType.EndUser);
+        var role = Role.Create(roleId, "tenant-001", "Operators");
+        var resource = Resource.CreateRoot(resourceId, "app-001", "Dashboard", "dashboard");
+        var operation = Operation.Create(operationId, "app-001", "read", "Read");
         var rule = AuthorizationRule.CreateForRole(
             "rule-001",
             role,
             resource,
             operation,
             AuthorizationRuleDecision.Allow);
-        var context = new AuthorizationEvaluationContext(
-            "user-001",
-            "resource-001",
-            "operation-001",
-            new[] { "role-001" });
+
+        var resourceRepo = new FakeResourceRepository(new[] { resource });
+        var ruleRepo = new FakeAuthorizationRuleRepository(new[] { rule });
+        var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(new[] { roleId });
+        var engine = new AuthorizationEngine(ruleRepo, resourceRepo, userRoleAssignmentRepo);
 
         // Act
-        var result = await _engine.EvaluateAsync(context, new[] { rule }, resources);
+        var result = await engine.EvaluateAsync(userId, resourceId, operationId);
 
         // Assert
         result.IsAuthorized.Should().BeTrue();
@@ -271,11 +297,15 @@ public sealed class AuthorizationEngineTests
     public async Task EvaluateAsync_Should_Respect_UserAndRole_Rule()
     {
         // Arrange
-        var user = User.Create("user-001", "tenant-001", UserType.EndUser);
-        var role = Role.Create("role-001", "tenant-001", "Operators");
-        var resource = Resource.CreateRoot("resource-001", "app-001", "Dashboard", "dashboard");
-        var resources = new[] { resource };
-        var operation = Operation.Create("operation-001", "app-001", "read", "Read");
+        var userId = "user-001";
+        var resourceId = "resource-001";
+        var operationId = "operation-001";
+        var roleId = "role-001";
+
+        var user = User.Create(userId, "tenant-001", UserType.EndUser);
+        var role = Role.Create(roleId, "tenant-001", "Operators");
+        var resource = Resource.CreateRoot(resourceId, "app-001", "Dashboard", "dashboard");
+        var operation = Operation.Create(operationId, "app-001", "read", "Read");
         var rule = AuthorizationRule.CreateForUserAndRole(
             "rule-001",
             user,
@@ -283,14 +313,14 @@ public sealed class AuthorizationEngineTests
             resource,
             operation,
             AuthorizationRuleDecision.Allow);
-        var context = new AuthorizationEvaluationContext(
-            "user-001",
-            "resource-001",
-            "operation-001",
-            new[] { "role-001" });
+
+        var resourceRepo = new FakeResourceRepository(new[] { resource });
+        var ruleRepo = new FakeAuthorizationRuleRepository(new[] { rule });
+        var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(new[] { roleId });
+        var engine = new AuthorizationEngine(ruleRepo, resourceRepo, userRoleAssignmentRepo);
 
         // Act
-        var result = await _engine.EvaluateAsync(context, new[] { rule }, resources);
+        var result = await engine.EvaluateAsync(userId, resourceId, operationId);
 
         // Assert
         result.IsAuthorized.Should().BeTrue();
@@ -301,11 +331,14 @@ public sealed class AuthorizationEngineTests
     public async Task EvaluateAsync_Should_Reject_UserAndRole_Rule_When_Only_User_Matches()
     {
         // Arrange
-        var user = User.Create("user-001", "tenant-001", UserType.EndUser);
+        var userId = "user-001";
+        var resourceId = "resource-001";
+        var operationId = "operation-001";
+
+        var user = User.Create(userId, "tenant-001", UserType.EndUser);
         var role = Role.Create("role-001", "tenant-001", "Operators");
-        var resource = Resource.CreateRoot("resource-001", "app-001", "Dashboard", "dashboard");
-        var resources = new[] { resource };
-        var operation = Operation.Create("operation-001", "app-001", "read", "Read");
+        var resource = Resource.CreateRoot(resourceId, "app-001", "Dashboard", "dashboard");
+        var operation = Operation.Create(operationId, "app-001", "read", "Read");
         var rule = AuthorizationRule.CreateForUserAndRole(
             "rule-001",
             user,
@@ -313,14 +346,14 @@ public sealed class AuthorizationEngineTests
             resource,
             operation,
             AuthorizationRuleDecision.Allow);
-        var context = new AuthorizationEvaluationContext(
-            "user-001",
-            "resource-001",
-            "operation-001",
-            Array.Empty<string>());
+
+        var resourceRepo = new FakeResourceRepository(new[] { resource });
+        var ruleRepo = new FakeAuthorizationRuleRepository(new[] { rule });
+        var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(Array.Empty<string>());
+        var engine = new AuthorizationEngine(ruleRepo, resourceRepo, userRoleAssignmentRepo);
 
         // Act
-        var result = await _engine.EvaluateAsync(context, new[] { rule }, resources);
+        var result = await engine.EvaluateAsync(userId, resourceId, operationId);
 
         // Assert
         result.IsAuthorized.Should().BeFalse();
@@ -330,10 +363,13 @@ public sealed class AuthorizationEngineTests
     public async Task EvaluateAsync_Should_Reject_Inactive_Rules()
     {
         // Arrange
-        var user = User.Create("user-001", "tenant-001", UserType.EndUser);
-        var resource = Resource.CreateRoot("resource-001", "app-001", "Dashboard", "dashboard");
-        var resources = new[] { resource };
-        var operation = Operation.Create("operation-001", "app-001", "read", "Read");
+        var userId = "user-001";
+        var resourceId = "resource-001";
+        var operationId = "operation-001";
+
+        var user = User.Create(userId, "tenant-001", UserType.EndUser);
+        var resource = Resource.CreateRoot(resourceId, "app-001", "Dashboard", "dashboard");
+        var operation = Operation.Create(operationId, "app-001", "read", "Read");
         var rule = AuthorizationRule.CreateForUser(
             "rule-001",
             user,
@@ -341,17 +377,102 @@ public sealed class AuthorizationEngineTests
             operation,
             AuthorizationRuleDecision.Allow);
         rule.Deactivate();
-        var context = new AuthorizationEvaluationContext(
-            "user-001",
-            "resource-001",
-            "operation-001",
-            Array.Empty<string>());
+
+        var resourceRepo = new FakeResourceRepository(new[] { resource });
+        var ruleRepo = new FakeAuthorizationRuleRepository(new[] { rule });
+        var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(Array.Empty<string>());
+        var engine = new AuthorizationEngine(ruleRepo, resourceRepo, userRoleAssignmentRepo);
 
         // Act
-        var result = await _engine.EvaluateAsync(context, new[] { rule }, resources);
+        var result = await engine.EvaluateAsync(userId, resourceId, operationId);
 
         // Assert
         result.IsAuthorized.Should().BeFalse();
         result.AppliedRules.Should().BeEmpty();
+    }
+
+    private sealed class FakeResourceRepository : IResourceRepository
+    {
+        private readonly List<Resource> _resources;
+
+        public FakeResourceRepository(IEnumerable<Resource> resources)
+        {
+            _resources = resources.ToList();
+        }
+
+        public Task<IReadOnlyCollection<Resource>> GetAllForApplicationAsync(string applicationId, CancellationToken cancellationToken = default)
+        {
+            var result = _resources.Where(r => r.ApplicationId == applicationId).ToList();
+            return Task.FromResult<IReadOnlyCollection<Resource>>(result);
+        }
+
+        public Task<Resource?> GetByIdAsync(string resourceId, CancellationToken cancellationToken = default)
+        {
+            var result = _resources.FirstOrDefault(r => r.Id == resourceId);
+            return Task.FromResult<Resource?>(result);
+        }
+    }
+
+    private sealed class FakeAuthorizationRuleRepository : IAuthorizationRuleRepository
+    {
+        private readonly List<AuthorizationRule> _rules;
+
+        public FakeAuthorizationRuleRepository(IEnumerable<AuthorizationRule> rules)
+        {
+            _rules = rules.ToList();
+        }
+
+        public Task<IReadOnlyCollection<AuthorizationRule>> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
+        {
+            var result = _rules.Where(r => r.UserId == userId).ToList();
+            return Task.FromResult<IReadOnlyCollection<AuthorizationRule>>(result);
+        }
+
+        public Task<IReadOnlyCollection<AuthorizationRule>> GetByRoleIdsAsync(IEnumerable<string> roleIds, CancellationToken cancellationToken = default)
+        {
+            var result = _rules.Where(r => r.RoleId != null && roleIds.Contains(r.RoleId!)).ToList();
+            return Task.FromResult<IReadOnlyCollection<AuthorizationRule>>(result);
+        }
+
+        public Task<IReadOnlyCollection<AuthorizationRule>> GetApplicableRulesAsync(
+            string userId,
+            IEnumerable<string> roleIds,
+            string resourceId,
+            string operationId,
+            CancellationToken cancellationToken = default)
+        {
+            var result = _rules.Where(r =>
+                r.IsActive &&
+                r.ResourceId == resourceId &&
+                r.OperationId == operationId &&
+                (
+                    (r.AppliesToUserAndRole && r.UserId == userId && roleIds.Contains(r.RoleId!)) ||
+                    (r.AppliesToUserOnly && r.UserId == userId) ||
+                    (r.AppliesToRoleOnly && roleIds.Contains(r.RoleId!))
+                )).ToList();
+            return Task.FromResult<IReadOnlyCollection<AuthorizationRule>>(result);
+        }
+    }
+
+    private sealed class FakeUserRoleAssignmentRepository : IUserRoleAssignmentRepository
+    {
+        private readonly List<UserRoleAssignment> _assignments;
+
+        public FakeUserRoleAssignmentRepository(IEnumerable<string> roleIds)
+        {
+            var tenantId = "tenant-001";
+            var user = User.Create("user-001", tenantId, UserType.EndUser);
+            _assignments = roleIds.Select(rid =>
+            {
+                var role = Role.Create(rid, tenantId, "Role " + rid);
+                return UserRoleAssignment.Assign("assign-" + rid, user, role);
+            }).ToList();
+        }
+
+        public Task<IReadOnlyCollection<UserRoleAssignment>> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
+        {
+            var result = _assignments.Where(a => a.UserId == userId).ToList();
+            return Task.FromResult<IReadOnlyCollection<UserRoleAssignment>>(result);
+        }
     }
 }
