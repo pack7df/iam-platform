@@ -5,11 +5,11 @@ namespace IamPlatform.Application.Tenants;
 public sealed class TenantAdminRegistration
 {
     private readonly ITenantRepository _tenantRepository;
-    private readonly ITenantUserRepository _tenantUserRepository;
+    private readonly IUserRepository _tenantUserRepository;
 
     public TenantAdminRegistration(
         ITenantRepository tenantRepository,
-        ITenantUserRepository tenantUserRepository)
+        IUserRepository tenantUserRepository)
     {
         _tenantRepository = tenantRepository;
         _tenantUserRepository = tenantUserRepository;
@@ -22,7 +22,7 @@ public sealed class TenantAdminRegistration
         CancellationToken cancellationToken = default)
     {
         var tenant = Tenant.Create(tenantId, tenantName);
-        var tenantAdmin = TenantUser.Create(tenantAdminId, tenant.Id, TenantUserType.TenantAdmin);
+        var tenantAdmin = User.Create(tenantAdminId, tenant.Id, UserType.TenantAdmin);
 
         await _tenantRepository.AddAsync(tenant, cancellationToken);
         await _tenantUserRepository.AddAsync(tenantAdmin, cancellationToken);
@@ -31,4 +31,4 @@ public sealed class TenantAdminRegistration
     }
 }
 
-public sealed record TenantAdminRegistrationResult(Tenant Tenant, TenantUser TenantAdmin);
+public sealed record TenantAdminRegistrationResult(Tenant Tenant, User TenantAdmin);

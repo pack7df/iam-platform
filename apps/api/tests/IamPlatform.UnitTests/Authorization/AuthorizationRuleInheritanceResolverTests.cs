@@ -14,8 +14,8 @@ public sealed class AuthorizationRuleInheritanceResolverTests
     {
         var resource = Resource.CreateRoot("resource-root", "app-001", "Dashboard", "dashboard");
         var operation = Operation.Create("operation-read", "app-001", "read", "Read");
-        var tenantUser = TenantUser.Create("tenant-user-001", "tenant-001", TenantUserType.EndUser);
-        var rule = AuthorizationRule.CreateForTenantUser(
+        var tenantUser = User.Create("tenant-user-001", "tenant-001", UserType.EndUser);
+        var rule = AuthorizationRule.CreateForUser(
             "rule-001",
             tenantUser,
             resource,
@@ -35,14 +35,14 @@ public sealed class AuthorizationRuleInheritanceResolverTests
         var root = Resource.CreateRoot("resource-root", "app-001", "Dashboard", "dashboard");
         var child = Resource.CreateChild("resource-child", "app-001", "Users", "users", root.Id);
         var operation = Operation.Create("operation-read", "app-001", "read", "Read");
-        var tenantUser = TenantUser.Create("tenant-user-001", "tenant-001", TenantUserType.EndUser);
-        var inheritedRule = AuthorizationRule.CreateForTenantUser(
+        var tenantUser = User.Create("tenant-user-001", "tenant-001", UserType.EndUser);
+        var inheritedRule = AuthorizationRule.CreateForUser(
             "rule-child",
             tenantUser,
             child,
             operation,
             AuthorizationRuleDecision.Inherit);
-        var parentRule = AuthorizationRule.CreateForTenantUser(
+        var parentRule = AuthorizationRule.CreateForUser(
             "rule-parent",
             tenantUser,
             root,
@@ -63,10 +63,10 @@ public sealed class AuthorizationRuleInheritanceResolverTests
         var middle = Resource.CreateChild("resource-middle", "app-001", "Admin", "admin", root.Id);
         var child = Resource.CreateChild("resource-child", "app-001", "Users", "users", middle.Id);
         var operation = Operation.Create("operation-read", "app-001", "read", "Read");
-        var tenantUser = TenantUser.Create("tenant-user-001", "tenant-001", TenantUserType.EndUser);
-        var childRule = AuthorizationRule.CreateForTenantUser("rule-child", tenantUser, child, operation, AuthorizationRuleDecision.Inherit);
-        var middleRule = AuthorizationRule.CreateForTenantUser("rule-middle", tenantUser, middle, operation, AuthorizationRuleDecision.Inherit);
-        var rootRule = AuthorizationRule.CreateForTenantUser("rule-root", tenantUser, root, operation, AuthorizationRuleDecision.Allow);
+        var tenantUser = User.Create("tenant-user-001", "tenant-001", UserType.EndUser);
+        var childRule = AuthorizationRule.CreateForUser("rule-child", tenantUser, child, operation, AuthorizationRuleDecision.Inherit);
+        var middleRule = AuthorizationRule.CreateForUser("rule-middle", tenantUser, middle, operation, AuthorizationRuleDecision.Inherit);
+        var rootRule = AuthorizationRule.CreateForUser("rule-root", tenantUser, root, operation, AuthorizationRuleDecision.Allow);
 
         var result = _resolver.Resolve(childRule, new[] { childRule, middleRule, rootRule }, new[] { root, middle, child });
 
@@ -82,9 +82,9 @@ public sealed class AuthorizationRuleInheritanceResolverTests
         var child = Resource.CreateChild("resource-child", "app-001", "Users", "users", root.Id);
         var readOperation = Operation.Create("operation-read", "app-001", "read", "Read");
         var writeOperation = Operation.Create("operation-write", "app-001", "write", "Write");
-        var tenantUser = TenantUser.Create("tenant-user-001", "tenant-001", TenantUserType.EndUser);
-        var inheritedRule = AuthorizationRule.CreateForTenantUser("rule-child", tenantUser, child, readOperation, AuthorizationRuleDecision.Inherit);
-        var parentRule = AuthorizationRule.CreateForTenantUser("rule-parent", tenantUser, root, writeOperation, AuthorizationRuleDecision.Allow);
+        var tenantUser = User.Create("tenant-user-001", "tenant-001", UserType.EndUser);
+        var inheritedRule = AuthorizationRule.CreateForUser("rule-child", tenantUser, child, readOperation, AuthorizationRuleDecision.Inherit);
+        var parentRule = AuthorizationRule.CreateForUser("rule-parent", tenantUser, root, writeOperation, AuthorizationRuleDecision.Allow);
 
         var result = _resolver.Resolve(inheritedRule, new[] { inheritedRule, parentRule }, new[] { root, child });
 
@@ -98,10 +98,10 @@ public sealed class AuthorizationRuleInheritanceResolverTests
         var root = Resource.CreateRoot("resource-root", "app-001", "Dashboard", "dashboard");
         var child = Resource.CreateChild("resource-child", "app-001", "Users", "users", root.Id);
         var operation = Operation.Create("operation-read", "app-001", "read", "Read");
-        var tenantUser = TenantUser.Create("tenant-user-001", "tenant-001", TenantUserType.EndUser);
-        var anotherTenantUser = TenantUser.Create("tenant-user-002", "tenant-001", TenantUserType.EndUser);
-        var inheritedRule = AuthorizationRule.CreateForTenantUser("rule-child", tenantUser, child, operation, AuthorizationRuleDecision.Inherit);
-        var parentRule = AuthorizationRule.CreateForTenantUser("rule-parent", anotherTenantUser, root, operation, AuthorizationRuleDecision.Allow);
+        var tenantUser = User.Create("tenant-user-001", "tenant-001", UserType.EndUser);
+        var anotherUser = User.Create("tenant-user-002", "tenant-001", UserType.EndUser);
+        var inheritedRule = AuthorizationRule.CreateForUser("rule-child", tenantUser, child, operation, AuthorizationRuleDecision.Inherit);
+        var parentRule = AuthorizationRule.CreateForUser("rule-parent", anotherUser, root, operation, AuthorizationRuleDecision.Allow);
 
         var result = _resolver.Resolve(inheritedRule, new[] { inheritedRule, parentRule }, new[] { root, child });
 
@@ -114,9 +114,9 @@ public sealed class AuthorizationRuleInheritanceResolverTests
         var root = Resource.CreateRoot("resource-root", "app-001", "Dashboard", "dashboard");
         var child = Resource.CreateChild("resource-child", "app-001", "Users", "users", root.Id);
         var operation = Operation.Create("operation-read", "app-001", "read", "Read");
-        var tenantUser = TenantUser.Create("tenant-user-001", "tenant-001", TenantUserType.EndUser);
-        var inheritedRule = AuthorizationRule.CreateForTenantUser("rule-child", tenantUser, child, operation, AuthorizationRuleDecision.Inherit);
-        var rootInheritedRule = AuthorizationRule.CreateForTenantUser("rule-root", tenantUser, root, operation, AuthorizationRuleDecision.Inherit);
+        var tenantUser = User.Create("tenant-user-001", "tenant-001", UserType.EndUser);
+        var inheritedRule = AuthorizationRule.CreateForUser("rule-child", tenantUser, child, operation, AuthorizationRuleDecision.Inherit);
+        var rootInheritedRule = AuthorizationRule.CreateForUser("rule-root", tenantUser, root, operation, AuthorizationRuleDecision.Inherit);
 
         var result = _resolver.Resolve(inheritedRule, new[] { inheritedRule, rootInheritedRule }, new[] { root, child });
 
@@ -131,8 +131,8 @@ public sealed class AuthorizationRuleInheritanceResolverTests
         var root = Resource.CreateRoot("resource-root", "app-001", "Dashboard", "dashboard");
         var child = Resource.CreateChild("resource-child", "app-001", "Users", "users", root.Id);
         var operation = Operation.Create("operation-read", "app-001", "read", "Read");
-        var tenantUser = TenantUser.Create("tenant-user-001", "tenant-001", TenantUserType.EndUser);
-        var inheritedRule = AuthorizationRule.CreateForTenantUser("rule-child", tenantUser, child, operation, AuthorizationRuleDecision.Inherit);
+        var tenantUser = User.Create("tenant-user-001", "tenant-001", UserType.EndUser);
+        var inheritedRule = AuthorizationRule.CreateForUser("rule-child", tenantUser, child, operation, AuthorizationRuleDecision.Inherit);
 
         var result = _resolver.Resolve(inheritedRule, new[] { inheritedRule }, new[] { root, child });
 

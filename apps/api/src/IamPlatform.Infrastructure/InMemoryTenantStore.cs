@@ -6,5 +6,5 @@ internal sealed class InMemoryTenantStore
 {
     public List<Tenant> Tenants { get; } = new();
 
-    public List<TenantUser> TenantUsers { get; } = new();
+    public List<User> Users { get; } = new();
 }

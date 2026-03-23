@@ -14,7 +14,7 @@ public static class DependencyInjection
         services.AddSingleton<ISystemUserRepository, InMemorySystemUserRepository>();
         services.AddSingleton<IInvitationRepository, InMemoryInvitationRepository>();
         services.AddSingleton<ITenantRepository, InMemoryTenantRepository>();
-        services.AddSingleton<ITenantUserRepository, InMemoryTenantUserRepository>();
+        services.AddSingleton<IUserRepository, InMemoryUserRepository>();
 
         return services;
     }

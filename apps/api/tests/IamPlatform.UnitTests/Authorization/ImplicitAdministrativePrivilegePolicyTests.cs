@@ -34,7 +34,7 @@ public sealed class ImplicitAdministrativePrivilegePolicyTests
     [Fact]
     public void CanManageTenant_Should_Allow_Active_TenantAdmin_For_Same_Tenant()
     {
-        var tenantAdmin = TenantUser.Create("tenant-user-001", "tenant-001", TenantUserType.TenantAdmin);
+        var tenantAdmin = User.Create("tenant-user-001", "tenant-001", UserType.TenantAdmin);
 
         var result = _policy.CanManageTenant(tenantAdmin, "tenant-001");
 
@@ -44,7 +44,7 @@ public sealed class ImplicitAdministrativePrivilegePolicyTests
     [Fact]
     public void CanManageTenant_Should_Reject_When_TenantAdmin_Is_Inactive()
     {
-        var tenantAdmin = TenantUser.Create("tenant-user-001", "tenant-001", TenantUserType.TenantAdmin);
+        var tenantAdmin = User.Create("tenant-user-001", "tenant-001", UserType.TenantAdmin);
         tenantAdmin.Deactivate();
 
         var result = _policy.CanManageTenant(tenantAdmin, "tenant-001");
@@ -55,7 +55,7 @@ public sealed class ImplicitAdministrativePrivilegePolicyTests
     [Fact]
     public void CanManageTenant_Should_Reject_When_TenantAdmin_Belongs_To_Different_Tenant()
     {
-        var tenantAdmin = TenantUser.Create("tenant-user-001", "tenant-001", TenantUserType.TenantAdmin);
+        var tenantAdmin = User.Create("tenant-user-001", "tenant-001", UserType.TenantAdmin);
 
         var result = _policy.CanManageTenant(tenantAdmin, "tenant-002");
 
@@ -63,11 +63,11 @@ public sealed class ImplicitAdministrativePrivilegePolicyTests
     }
 
     [Theory]
-    [InlineData(TenantUserType.EndUser)]
-    [InlineData(TenantUserType.ServiceAdmin)]
-    public void CanManageTenant_Should_Reject_Non_TenantAdmin_Types(TenantUserType userType)
+    [InlineData(UserType.EndUser)]
+    [InlineData(UserType.ServiceAdmin)]
+    public void CanManageTenant_Should_Reject_Non_TenantAdmin_Types(UserType userType)
     {
-        var tenantUser = TenantUser.Create("tenant-user-001", "tenant-001", userType);
+        var tenantUser = User.Create("tenant-user-001", "tenant-001", userType);
 
         var result = _policy.CanManageTenant(tenantUser, "tenant-001");
 
@@ -79,7 +79,7 @@ public sealed class ImplicitAdministrativePrivilegePolicyTests
     [InlineData(" ")]
     public void CanManageTenant_Should_Reject_Invalid_TenantId(string invalidTenantId)
     {
-        var tenantAdmin = TenantUser.Create("tenant-user-001", "tenant-001", TenantUserType.TenantAdmin);
+        var tenantAdmin = User.Create("tenant-user-001", "tenant-001", UserType.TenantAdmin);
 
         var act = () => _policy.CanManageTenant(tenantAdmin, invalidTenantId);
 
