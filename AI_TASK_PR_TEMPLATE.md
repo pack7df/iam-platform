@@ -102,3 +102,5 @@
 - No mezclar refactor, feature y cambios de infraestructura en el mismo PR salvo necesidad justificada.
 - Preferir cambios pequenos, verticales y revisables.
 - Si una tarea crece demasiado, detenerse y proponer division antes de seguir.
+- Evitar metodos con codigo muy largo (>30 lineas). Dividir en metodos pequenos con nombres descriptivos.
+- Minimizar la anidacion de codigo. Preferir retornos anticipados y guard clauses sobre else anidados.
