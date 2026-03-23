@@ -8,6 +8,5 @@ public interface IAuthorizationService
         string userId,
         string resourceId,
         string operationId,
-        IEnumerable<string> roleIds,
         CancellationToken cancellationToken = default);
 }

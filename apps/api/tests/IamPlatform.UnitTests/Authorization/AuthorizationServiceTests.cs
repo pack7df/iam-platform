@@ -16,7 +16,6 @@ public sealed class AuthorizationServiceTests
         var tenantId = "tenant-001";
         var resourceId = "resource-001";
         var operationId = "op-001";
-        var roleIds = new string[0];
         var applicationId = "app-001";
 
         var user = User.Create(userId, tenantId, UserType.EndUser);
@@ -31,12 +30,13 @@ public sealed class AuthorizationServiceTests
 
         var resourceRepo = new FakeResourceRepository(new[] { resource });
         var ruleRepo = new FakeAuthorizationRuleRepository(new[] { rule });
+        var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(Array.Empty<string>());
         var engine = new AuthorizationEngine();
 
-        var service = new AuthorizationService(engine, resourceRepo, ruleRepo);
+        var service = new AuthorizationService(engine, resourceRepo, ruleRepo, userRoleAssignmentRepo);
 
         // Act
-        var result = await service.EvaluateAsync(userId, resourceId, operationId, roleIds);
+        var result = await service.EvaluateAsync(userId, resourceId, operationId);
 
         // Assert
         result.IsAuthorized.Should().BeTrue();
@@ -51,18 +51,18 @@ public sealed class AuthorizationServiceTests
         var userId = "user-001";
         var resourceId = "resource-001";
         var operationId = "op-001";
-        var roleIds = new string[0];
         var applicationId = "app-001";
 
         var resource = Resource.CreateRoot(resourceId, applicationId, "Test Resource", "test");
         var resourceRepo = new FakeResourceRepository(new[] { resource });
         var ruleRepo = new FakeAuthorizationRuleRepository(Array.Empty<AuthorizationRule>());
+        var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(Array.Empty<string>());
         var engine = new AuthorizationEngine();
 
-        var service = new AuthorizationService(engine, resourceRepo, ruleRepo);
+        var service = new AuthorizationService(engine, resourceRepo, ruleRepo, userRoleAssignmentRepo);
 
         // Act
-        var result = await service.EvaluateAsync(userId, resourceId, operationId, roleIds);
+        var result = await service.EvaluateAsync(userId, resourceId, operationId);
 
         // Assert
         result.IsAuthorized.Should().BeFalse();
@@ -78,11 +78,11 @@ public sealed class AuthorizationServiceTests
         var tenantId = "tenant-001";
         var resourceId = "resource-001";
         var operationId = "op-001";
-        var roleIds = new[] { "role-001" };
+        var roleId = "role-001";
         var applicationId = "app-001";
 
         var user = User.Create(userId, tenantId, UserType.EndUser);
-        var role = Role.Create("role-001", tenantId, "Operators");
+        var role = Role.Create(roleId, tenantId, "Operators");
         var resource = Resource.CreateRoot(resourceId, applicationId, "Test Resource", "test");
         var operation = Operation.Create(operationId, applicationId, "read", "Read");
 
@@ -101,12 +101,13 @@ public sealed class AuthorizationServiceTests
 
         var resourceRepo = new FakeResourceRepository(new[] { resource });
         var ruleRepo = new FakeAuthorizationRuleRepository(new[] { userAllowRule, roleDenyRule });
+        var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(new[] { roleId });
         var engine = new AuthorizationEngine();
 
-        var service = new AuthorizationService(engine, resourceRepo, ruleRepo);
+        var service = new AuthorizationService(engine, resourceRepo, ruleRepo, userRoleAssignmentRepo);
 
         // Act
-        var result = await service.EvaluateAsync(userId, resourceId, operationId, roleIds);
+        var result = await service.EvaluateAsync(userId, resourceId, operationId);
 
         // Assert
         result.IsAuthorized.Should().BeFalse(); // Deny takes precedence
@@ -141,12 +142,13 @@ public sealed class AuthorizationServiceTests
 
         var resourceRepo = new FakeResourceRepository(new[] { root, child });
         var ruleRepo = new FakeAuthorizationRuleRepository(new[] { inheritRule, parentAllowRule });
+        var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(Array.Empty<string>());
         var engine = new AuthorizationEngine();
 
-        var service = new AuthorizationService(engine, resourceRepo, ruleRepo);
+        var service = new AuthorizationService(engine, resourceRepo, ruleRepo, userRoleAssignmentRepo);
 
         // Act
-        var result = await service.EvaluateAsync(userId, "resource-child", "op-read", Array.Empty<string>());
+        var result = await service.EvaluateAsync(userId, "resource-child", "op-read");
 
         // Assert
         result.IsAuthorized.Should().BeTrue();
@@ -162,16 +164,16 @@ public sealed class AuthorizationServiceTests
         var userId = "user-001";
         var resourceId = "non-existent";
         var operationId = "op-001";
-        var roleIds = Array.Empty<string>();
 
         var resourceRepo = new FakeResourceRepository(Array.Empty<Resource>());
         var ruleRepo = new FakeAuthorizationRuleRepository(Array.Empty<AuthorizationRule>());
+        var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(Array.Empty<string>());
         var engine = new AuthorizationEngine();
 
-        var service = new AuthorizationService(engine, resourceRepo, ruleRepo);
+        var service = new AuthorizationService(engine, resourceRepo, ruleRepo, userRoleAssignmentRepo);
 
         // Act
-        var result = await service.EvaluateAsync(userId, resourceId, operationId, roleIds);
+        var result = await service.EvaluateAsync(userId, resourceId, operationId);
 
         // Assert
         result.IsAuthorized.Should().BeFalse();
@@ -220,6 +222,28 @@ public sealed class AuthorizationServiceTests
         {
             var result = _rules.Where(r => r.RoleId != null && roleIds.Contains(r.RoleId)).ToList();
             return Task.FromResult<IReadOnlyCollection<AuthorizationRule>>(result);
+        }
+    }
+
+    private sealed class FakeUserRoleAssignmentRepository : IUserRoleAssignmentRepository
+    {
+        private readonly List<UserRoleAssignment> _assignments;
+
+        public FakeUserRoleAssignmentRepository(IEnumerable<string> roleIds)
+        {
+            var tenantId = "tenant-001";
+            var user = User.Create("user-001", tenantId, UserType.EndUser);
+            _assignments = roleIds.Select(rid =>
+            {
+                var role = Role.Create(rid, tenantId, "Role " + rid);
+                return UserRoleAssignment.Assign("assign-" + rid, user, role);
+            }).ToList();
+        }
+
+        public Task<IReadOnlyCollection<UserRoleAssignment>> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
+        {
+            var result = _assignments.Where(a => a.UserId == userId).ToList();
+            return Task.FromResult<IReadOnlyCollection<UserRoleAssignment>>(result);
         }
     }
 }
