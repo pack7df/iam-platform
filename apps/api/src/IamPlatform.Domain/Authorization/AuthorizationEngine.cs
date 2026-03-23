@@ -34,7 +34,7 @@ public sealed class AuthorizationEngine : IAuthorizationEngine
 
         if (!appliedRules.Any())
         {
-            return AuthorizationResult.Denied(resourceId, operationId, Array.Empty<AuthorizationRule>());
+            return AuthorizationResult.Denied(userId, resourceId, operationId, Array.Empty<AuthorizationRule>());
         }
 
         var resolvedDecisions = appliedRules.Select(r => r.Decision).ToList();
@@ -42,8 +42,8 @@ public sealed class AuthorizationEngine : IAuthorizationEngine
         var resolvedResourceId = appliedRules.First().ResourceId;
 
         return finalDecision == AuthorizationRuleDecision.Allow
-            ? AuthorizationResult.Authorized(resolvedResourceId, operationId, appliedRules)
-            : AuthorizationResult.Denied(resolvedResourceId, operationId, appliedRules);
+            ? AuthorizationResult.Authorized(userId, resolvedResourceId, operationId, appliedRules)
+            : AuthorizationResult.Denied(userId, resolvedResourceId, operationId, appliedRules);
     }
 
     private async Task<List<AuthorizationRule>> FindAppliedRulesAsync(

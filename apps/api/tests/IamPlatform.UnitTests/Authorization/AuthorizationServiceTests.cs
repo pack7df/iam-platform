@@ -39,6 +39,7 @@ public sealed class AuthorizationServiceTests
         // Assert
         result.IsAuthorized.Should().BeTrue();
         result.Decision.Should().Be(AuthorizationRuleDecision.Allow);
+        result.UserId.Should().Be(userId);
         result.AppliedRules.Should().ContainSingle();
     }
 
@@ -64,6 +65,7 @@ public sealed class AuthorizationServiceTests
         // Assert
         result.IsAuthorized.Should().BeFalse();
         result.Decision.Should().Be(AuthorizationRuleDecision.Deny);
+        result.UserId.Should().Be(userId);
         result.AppliedRules.Should().BeEmpty();
     }
 
@@ -107,6 +109,7 @@ public sealed class AuthorizationServiceTests
         // Assert
         result.IsAuthorized.Should().BeFalse(); // Deny takes precedence
         result.Decision.Should().Be(AuthorizationRuleDecision.Deny);
+        result.UserId.Should().Be(userId);
     }
 
     [Fact]
@@ -148,6 +151,7 @@ public sealed class AuthorizationServiceTests
         result.IsAuthorized.Should().BeTrue();
         result.Decision.Should().Be(AuthorizationRuleDecision.Allow);
         result.ResolvedResourceId.Should().Be("resource-root");
+        result.UserId.Should().Be(userId);
         result.AppliedRules.Should().Contain(parentAllowRule);
     }
 
@@ -171,6 +175,7 @@ public sealed class AuthorizationServiceTests
         // Assert
         result.IsAuthorized.Should().BeFalse();
         result.Decision.Should().Be(AuthorizationRuleDecision.Deny);
+        result.UserId.Should().Be(userId);
         result.AppliedRules.Should().BeEmpty();
     }
 

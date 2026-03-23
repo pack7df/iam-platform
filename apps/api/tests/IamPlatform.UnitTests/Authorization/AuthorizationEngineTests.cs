@@ -37,6 +37,7 @@ public sealed class AuthorizationEngineTests
         result.IsAuthorized.Should().BeTrue();
         result.Decision.Should().Be(AuthorizationRuleDecision.Allow);
         result.ResolvedResourceId.Should().Be(resourceId);
+        result.UserId.Should().Be(userId);
         result.AppliedRules.Should().ContainSingle();
     }
 
@@ -70,6 +71,7 @@ public sealed class AuthorizationEngineTests
         result.IsAuthorized.Should().BeFalse();
         result.Decision.Should().Be(AuthorizationRuleDecision.Deny);
         result.ResolvedResourceId.Should().Be(resourceId);
+        result.UserId.Should().Be(userId);
     }
 
     [Fact]
@@ -97,6 +99,7 @@ public sealed class AuthorizationEngineTests
         // Assert
         result.IsAuthorized.Should().BeTrue();
         result.Decision.Should().Be(AuthorizationRuleDecision.Allow);
+        result.UserId.Should().Be(userId);
     }
 
     [Fact]
@@ -125,6 +128,7 @@ public sealed class AuthorizationEngineTests
         // Assert
         result.IsAuthorized.Should().BeFalse();
         result.Decision.Should().Be(AuthorizationRuleDecision.Deny);
+        result.UserId.Should().Be(userId);
     }
 
     [Fact]
@@ -147,6 +151,8 @@ public sealed class AuthorizationEngineTests
         // Assert
         result.IsAuthorized.Should().BeFalse();
         result.Decision.Should().Be(AuthorizationRuleDecision.Deny);
+        result.UserId.Should().Be(userId);
+        result.ResolvedResourceId.Should().Be(resourceId);
         result.AppliedRules.Should().BeEmpty();
     }
 
@@ -187,6 +193,7 @@ public sealed class AuthorizationEngineTests
         result.IsAuthorized.Should().BeFalse();
         result.Decision.Should().Be(AuthorizationRuleDecision.Deny);
         result.ResolvedResourceId.Should().Be("resource-root");
+        result.UserId.Should().Be(userId);
         result.AppliedRules.Should().Contain(parentRule);
     }
 
@@ -219,6 +226,7 @@ public sealed class AuthorizationEngineTests
         result.IsAuthorized.Should().BeTrue();
         result.Decision.Should().Be(AuthorizationRuleDecision.Allow);
         result.ResolvedResourceId.Should().Be("resource-root");
+        result.UserId.Should().Be(userId);
         result.AppliedRules.Should().Contain(rootRule);
     }
 
@@ -258,6 +266,7 @@ public sealed class AuthorizationEngineTests
         // Assert
         result.IsAuthorized.Should().BeFalse();
         result.Decision.Should().Be(AuthorizationRuleDecision.Deny);
+        result.UserId.Should().Be(userId);
     }
 
     [Fact]
@@ -291,6 +300,7 @@ public sealed class AuthorizationEngineTests
         // Assert
         result.IsAuthorized.Should().BeTrue();
         result.Decision.Should().Be(AuthorizationRuleDecision.Allow);
+        result.UserId.Should().Be(userId);
     }
 
     [Fact]
@@ -325,6 +335,7 @@ public sealed class AuthorizationEngineTests
         // Assert
         result.IsAuthorized.Should().BeTrue();
         result.Decision.Should().Be(AuthorizationRuleDecision.Allow);
+        result.UserId.Should().Be(userId);
     }
 
     [Fact]
@@ -357,6 +368,7 @@ public sealed class AuthorizationEngineTests
 
         // Assert
         result.IsAuthorized.Should().BeFalse();
+        result.UserId.Should().Be(userId);
     }
 
     [Fact]
@@ -389,6 +401,7 @@ public sealed class AuthorizationEngineTests
         // Assert
         result.IsAuthorized.Should().BeFalse();
         result.AppliedRules.Should().BeEmpty();
+        result.UserId.Should().Be(userId);
     }
 
     private sealed class FakeResourceRepository : IResourceRepository
