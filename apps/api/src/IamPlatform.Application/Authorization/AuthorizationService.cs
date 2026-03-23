@@ -32,7 +32,7 @@ public sealed class AuthorizationService : IAuthorizationService
         var resource = await _resourceRepository.GetByIdAsync(resourceId, cancellationToken);
         if (resource == null)
         {
-            return AuthorizationResult.Denied(null, Array.Empty<AuthorizationRule>());
+            return AuthorizationResult.Denied(resourceId, operationId, Array.Empty<AuthorizationRule>());
         }
 
         // 2. Get all resources for the application (for inheritance resolution)
@@ -42,7 +42,7 @@ public sealed class AuthorizationService : IAuthorizationService
         var userRoleAssignments = await _userRoleAssignmentRepository.GetByUserIdAsync(userId, cancellationToken);
         var roleIds = userRoleAssignments.Select(ra => ra.RoleId).ToArray();
 
-        // 4. Get rules: user-specific rules + role-based rules
+        // 4. Get rules: user-specific + role-based
         var userRules = await _ruleRepository.GetByUserIdAsync(userId, cancellationToken);
         var roleRules = await _ruleRepository.GetByRoleIdsAsync(roleIds, cancellationToken);
         var allRules = userRules.Concat(roleRules).ToList();
