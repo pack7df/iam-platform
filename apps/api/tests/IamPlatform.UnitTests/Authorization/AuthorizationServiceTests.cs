@@ -28,9 +28,9 @@ public sealed class AuthorizationServiceTests
             AuthorizationRuleDecision.Allow);
 
         var resourceRepo = new FakeResourceRepository(new[] { resource });
-        var ruleRepo = new FakeAuthorizationRuleRepository(new[] { rule });
         var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(Array.Empty<string>());
-        var engine = new AuthorizationEngine(ruleRepo, resourceRepo, userRoleAssignmentRepo);
+        var ruleRepo = new FakeAuthorizationRuleRepository(new[] { rule }, userRoleAssignmentRepo);
+        var engine = new AuthorizationEngine(ruleRepo, resourceRepo);
         var service = new AuthorizationService(engine);
 
         // Act
@@ -53,9 +53,9 @@ public sealed class AuthorizationServiceTests
 
         var resource = Resource.CreateRoot(resourceId, applicationId, "Test Resource", "test");
         var resourceRepo = new FakeResourceRepository(new[] { resource });
-        var ruleRepo = new FakeAuthorizationRuleRepository(Array.Empty<AuthorizationRule>());
         var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(Array.Empty<string>());
-        var engine = new AuthorizationEngine(ruleRepo, resourceRepo, userRoleAssignmentRepo);
+        var ruleRepo = new FakeAuthorizationRuleRepository(Array.Empty<AuthorizationRule>(), userRoleAssignmentRepo);
+        var engine = new AuthorizationEngine(ruleRepo, resourceRepo);
         var service = new AuthorizationService(engine);
 
         // Act
@@ -96,9 +96,9 @@ public sealed class AuthorizationServiceTests
             AuthorizationRuleDecision.Deny);
 
         var resourceRepo = new FakeResourceRepository(new[] { resource });
-        var ruleRepo = new FakeAuthorizationRuleRepository(new[] { userAllowRule, roleDenyRule });
         var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(new[] { roleId });
-        var engine = new AuthorizationEngine(ruleRepo, resourceRepo, userRoleAssignmentRepo);
+        var ruleRepo = new FakeAuthorizationRuleRepository(new[] { userAllowRule, roleDenyRule }, userRoleAssignmentRepo);
+        var engine = new AuthorizationEngine(ruleRepo, resourceRepo);
         var service = new AuthorizationService(engine);
 
         // Act
@@ -136,9 +136,9 @@ public sealed class AuthorizationServiceTests
             AuthorizationRuleDecision.Allow);
 
         var resourceRepo = new FakeResourceRepository(new[] { root, child });
-        var ruleRepo = new FakeAuthorizationRuleRepository(new[] { inheritRule, parentAllowRule });
         var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(Array.Empty<string>());
-        var engine = new AuthorizationEngine(ruleRepo, resourceRepo, userRoleAssignmentRepo);
+        var ruleRepo = new FakeAuthorizationRuleRepository(new[] { inheritRule, parentAllowRule }, userRoleAssignmentRepo);
+        var engine = new AuthorizationEngine(ruleRepo, resourceRepo);
         var service = new AuthorizationService(engine);
 
         // Act
@@ -160,9 +160,9 @@ public sealed class AuthorizationServiceTests
         var operationId = "op-001";
 
         var resourceRepo = new FakeResourceRepository(Array.Empty<Resource>());
-        var ruleRepo = new FakeAuthorizationRuleRepository(Array.Empty<AuthorizationRule>());
         var userRoleAssignmentRepo = new FakeUserRoleAssignmentRepository(Array.Empty<string>());
-        var engine = new AuthorizationEngine(ruleRepo, resourceRepo, userRoleAssignmentRepo);
+        var ruleRepo = new FakeAuthorizationRuleRepository(Array.Empty<AuthorizationRule>(), userRoleAssignmentRepo);
+        var engine = new AuthorizationEngine(ruleRepo, resourceRepo);
         var service = new AuthorizationService(engine);
 
         // Act
@@ -199,10 +199,12 @@ public sealed class AuthorizationServiceTests
     private sealed class FakeAuthorizationRuleRepository : IAuthorizationRuleRepository
     {
         private readonly List<AuthorizationRule> _rules;
+        private readonly IUserRoleAssignmentRepository _userRoleAssignmentRepository;
 
-        public FakeAuthorizationRuleRepository(IEnumerable<AuthorizationRule> rules)
+        public FakeAuthorizationRuleRepository(IEnumerable<AuthorizationRule> rules, IUserRoleAssignmentRepository userRoleAssignmentRepository)
         {
             _rules = rules.ToList();
+            _userRoleAssignmentRepository = userRoleAssignmentRepository;
         }
 
         public Task<IReadOnlyCollection<AuthorizationRule>> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
@@ -211,19 +213,15 @@ public sealed class AuthorizationServiceTests
             return Task.FromResult<IReadOnlyCollection<AuthorizationRule>>(result);
         }
 
-        public Task<IReadOnlyCollection<AuthorizationRule>> GetByRoleIdsAsync(IEnumerable<string> roleIds, CancellationToken cancellationToken = default)
-        {
-            var result = _rules.Where(r => r.RoleId != null && roleIds.Contains(r.RoleId!)).ToList();
-            return Task.FromResult<IReadOnlyCollection<AuthorizationRule>>(result);
-        }
-
-        public Task<IReadOnlyCollection<AuthorizationRule>> GetApplicableRulesAsync(
+        public async Task<IReadOnlyCollection<AuthorizationRule>> GetApplicableRulesAsync(
             string userId,
-            IEnumerable<string> roleIds,
             string resourceId,
             string operationId,
             CancellationToken cancellationToken = default)
         {
+            var userRoleAssignments = await _userRoleAssignmentRepository.GetByUserIdAsync(userId, cancellationToken);
+            var roleIds = userRoleAssignments.Select(ra => ra.RoleId).ToArray();
+
             var result = _rules.Where(r =>
                 r.IsActive &&
                 r.ResourceId == resourceId &&
@@ -233,7 +231,7 @@ public sealed class AuthorizationServiceTests
                     (r.AppliesToUserOnly && r.UserId == userId) ||
                     (r.AppliesToRoleOnly && roleIds.Contains(r.RoleId!))
                 )).ToList();
-            return Task.FromResult<IReadOnlyCollection<AuthorizationRule>>(result);
+            return result;
         }
     }
 
