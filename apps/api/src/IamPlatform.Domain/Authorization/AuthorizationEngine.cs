@@ -1,65 +1,80 @@
 using IamPlatform.Domain.Authorization;
+using IamPlatform.Domain.Tenants;
 
 namespace IamPlatform.Domain.Authorization;
 
 public sealed class AuthorizationEngine : IAuthorizationEngine
 {
+    private readonly IAuthorizationRuleRepository _ruleRepository;
+    private readonly IResourceRepository _resourceRepository;
+    private readonly IUserRoleAssignmentRepository _userRoleAssignmentRepository;
     private readonly IAuthorizationPolicy _policy;
 
-    public AuthorizationEngine(IAuthorizationPolicy? policy = null)
+    public AuthorizationEngine(
+        IAuthorizationRuleRepository ruleRepository,
+        IResourceRepository resourceRepository,
+        IUserRoleAssignmentRepository userRoleAssignmentRepository,
+        IAuthorizationPolicy? policy = null)
     {
+        _ruleRepository = ruleRepository;
+        _resourceRepository = resourceRepository;
+        _userRoleAssignmentRepository = userRoleAssignmentRepository;
         _policy = policy ?? new DenyPrecedencePolicy();
     }
 
-    public Task<AuthorizationResult> EvaluateAsync(
-        AuthorizationEvaluationContext context,
-        IReadOnlyList<AuthorizationRule> rules,
-        IReadOnlyCollection<Resource> resources,
+    public async Task<AuthorizationResult> EvaluateAsync(
+        string userId,
+        string resourceId,
+        string operationId,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(context);
-        ArgumentNullException.ThrowIfNull(rules);
-        ArgumentNullException.ThrowIfNull(resources);
+        ArgumentNullException.ThrowIfNull(userId);
+        ArgumentNullException.ThrowIfNull(resourceId);
+        ArgumentNullException.ThrowIfNull(operationId);
 
-        var resourcesById = resources.ToDictionary(r => r.Id);
-        var appliedRules = FindAppliedRules(context, rules, resourcesById);
+        // Get user's role assignments
+        var userRoleAssignments = await _userRoleAssignmentRepository.GetByUserIdAsync(userId, cancellationToken);
+        var roleIds = userRoleAssignments.Select(ra => ra.RoleId).ToArray();
+
+        // Find applied rules recursively with on-demand data loading
+        var appliedRules = await FindAppliedRulesAsync(userId, roleIds, resourceId, operationId, cancellationToken);
 
         if (!appliedRules.Any())
         {
-            return Task.FromResult(AuthorizationResult.Denied(context.ResourceId, context.OperationId, Array.Empty<AuthorizationRule>()));
+            return AuthorizationResult.Denied(resourceId, operationId, Array.Empty<AuthorizationRule>());
         }
 
         var resolvedDecisions = appliedRules.Select(r => r.Decision).ToList();
         var finalDecision = _policy.Aggregate(resolvedDecisions);
         var resolvedResourceId = appliedRules.First().ResourceId;
 
-        var result = finalDecision == AuthorizationRuleDecision.Allow
-            ? AuthorizationResult.Authorized(resolvedResourceId, context.OperationId, appliedRules)
-            : AuthorizationResult.Denied(resolvedResourceId, context.OperationId, appliedRules);
-
-        return Task.FromResult(result);
+        return finalDecision == AuthorizationRuleDecision.Allow
+            ? AuthorizationResult.Authorized(resolvedResourceId, operationId, appliedRules)
+            : AuthorizationResult.Denied(resolvedResourceId, operationId, appliedRules);
     }
 
-    private static List<AuthorizationRule> FindAppliedRules(
-        AuthorizationEvaluationContext context,
-        IReadOnlyList<AuthorizationRule> allRules,
-        IReadOnlyDictionary<string, Resource> resourcesById)
+    private async Task<List<AuthorizationRule>> FindAppliedRulesAsync(
+        string userId,
+        string[] roleIds,
+        string resourceId,
+        string operationId,
+        CancellationToken cancellationToken)
     {
         var applied = new List<AuthorizationRule>();
         var visited = new HashSet<string>();
 
-        void Process(string resourceId)
+        async Task Process(string currentResourceId)
         {
-            if (visited.Contains(resourceId)) return;
-            visited.Add(resourceId);
+            if (visited.Contains(currentResourceId)) return;
+            visited.Add(currentResourceId);
 
-            if (!resourcesById.TryGetValue(resourceId, out var resource)) return;
+            // Get applicable rules for this resource directly from repository (on-demand)
+            var rules = await _ruleRepository.GetApplicableRulesAsync(
+                userId, roleIds, currentResourceId, operationId, cancellationToken);
 
-            foreach (var rule in allRules)
+            foreach (var rule in rules)
             {
                 if (!rule.IsActive) continue;
-                if (rule.ResourceId != resource.Id || rule.OperationId != context.OperationId) continue;
-                if (!RuleMatchesContext(rule, context)) continue;
 
                 if (rule.Decision is AuthorizationRuleDecision.Allow or AuthorizationRuleDecision.Deny)
                 {
@@ -67,22 +82,18 @@ public sealed class AuthorizationEngine : IAuthorizationEngine
                 }
                 else if (rule.Decision == AuthorizationRuleDecision.Inherit)
                 {
-                    if (resource.ParentId != null)
+                    // Need to get the resource to check its parent
+                    var resource = await _resourceRepository.GetByIdAsync(currentResourceId, cancellationToken);
+                    if (resource?.ParentId != null)
                     {
-                        Process(resource.ParentId);
+                        await Process(resource.ParentId);
                     }
                 }
             }
         }
 
-        Process(context.ResourceId);
+        await Process(resourceId);
         return applied;
     }
 
-    private static bool RuleMatchesContext(AuthorizationRule rule, AuthorizationEvaluationContext context)
-    {
-        return rule.AppliesToUserAndRole && rule.UserId == context.UserId && context.RoleIds.Contains(rule.RoleId!)
-            || rule.AppliesToUserOnly && rule.UserId == context.UserId
-            || rule.AppliesToRoleOnly && context.RoleIds.Contains(rule.RoleId!);
-    }
 }
