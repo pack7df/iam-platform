@@ -39,10 +39,7 @@ public sealed class AuthorizationEngine : IAuthorizationEngine
         // Find applied rules recursively with on-demand data loading
         var appliedRules = await FindAppliedRulesAsync(userId, roleIds, resourceId, operationId, cancellationToken);
 
-        if (!appliedRules.Any())
-        {
-            return AuthorizationResult.Denied(resourceId, operationId, Array.Empty<AuthorizationRule>());
-        }
+        if (!appliedRules.Any()) return AuthorizationResult.Denied(resourceId, operationId, Array.Empty<AuthorizationRule>());
 
         var resolvedDecisions = appliedRules.Select(r => r.Decision).ToList();
         var finalDecision = _policy.Aggregate(resolvedDecisions);
@@ -61,13 +58,9 @@ public sealed class AuthorizationEngine : IAuthorizationEngine
         CancellationToken cancellationToken)
     {
         var applied = new List<AuthorizationRule>();
-        var visited = new HashSet<string>();
 
         async Task Process(string currentResourceId)
         {
-            if (visited.Contains(currentResourceId)) return;
-            visited.Add(currentResourceId);
-
             // Get applicable rules for this resource directly from repository (on-demand)
             var rules = await _ruleRepository.GetApplicableRulesAsync(
                 userId, roleIds, currentResourceId, operationId, cancellationToken);
@@ -75,25 +68,29 @@ public sealed class AuthorizationEngine : IAuthorizationEngine
             foreach (var rule in rules)
             {
                 if (!rule.IsActive) continue;
+                if (rule.ResourceId != currentResourceId || rule.OperationId != operationId) continue;
+                if (!MatchesContext(rule, userId, roleIds)) continue;
 
                 if (rule.Decision is AuthorizationRuleDecision.Allow or AuthorizationRuleDecision.Deny)
                 {
                     applied.Add(rule);
+                    continue;
                 }
-                else if (rule.Decision == AuthorizationRuleDecision.Inherit)
-                {
-                    // Need to get the resource to check its parent
-                    var resource = await _resourceRepository.GetByIdAsync(currentResourceId, cancellationToken);
-                    if (resource?.ParentId != null)
-                    {
-                        await Process(resource.ParentId);
-                    }
-                }
+                var resource = await _resourceRepository.GetByIdAsync(currentResourceId, cancellationToken);
+                if (resource?.ParentId != null)
+                    await Process(resource.ParentId);
             }
         }
 
         await Process(resourceId);
         return applied;
+    }
+
+    private static bool MatchesContext(AuthorizationRule rule, string userId, string[] roleIds)
+    {
+        return rule.AppliesToUserAndRole && rule.UserId == userId && roleIds.Contains(rule.RoleId!)
+            || rule.AppliesToUserOnly && rule.UserId == userId
+            || rule.AppliesToRoleOnly && roleIds.Contains(rule.RoleId!);
     }
 
 }
