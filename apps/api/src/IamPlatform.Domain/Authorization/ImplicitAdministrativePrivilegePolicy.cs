@@ -13,14 +13,14 @@ public sealed class ImplicitAdministrativePrivilegePolicy
         return systemUser.IsActive;
     }
 
-    public bool CanManageTenant(TenantUser tenantUser, string tenantId)
+    public bool CanManageTenant(User tenantUser, string tenantId)
     {
         ArgumentNullException.ThrowIfNull(tenantUser);
 
         var requiredTenantId = Guard.Required(tenantId, nameof(tenantId), "Tenant id is required.");
 
         return tenantUser.IsActive
-            && tenantUser.Type == TenantUserType.TenantAdmin
+            && tenantUser.Type == UserType.TenantAdmin
             && tenantUser.TenantId == requiredTenantId;
     }
 }

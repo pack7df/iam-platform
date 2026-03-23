@@ -10,9 +10,9 @@ public sealed class AuthorizationRuleMatcherTests
     private readonly AuthorizationRuleMatcher _matcher = new();
 
     [Fact]
-    public void IsApplicable_Should_Match_Rule_For_TenantUser_Only()
+    public void IsApplicable_Should_Match_Rule_For_User_Only()
     {
-        var rule = CreateTenantUserRule();
+        var rule = CreateUserRule();
         var context = new AuthorizationEvaluationContext(
             "tenant-user-001",
             "resource-001",
@@ -40,9 +40,9 @@ public sealed class AuthorizationRuleMatcherTests
     }
 
     [Fact]
-    public void IsApplicable_Should_Match_Rule_For_TenantUser_And_Role_When_Both_Match()
+    public void IsApplicable_Should_Match_Rule_For_User_And_Role_When_Both_Match()
     {
-        var rule = CreateTenantUserAndRoleRule();
+        var rule = CreateUserAndRoleRule();
         var context = new AuthorizationEvaluationContext(
             "tenant-user-001",
             "resource-001",
@@ -57,7 +57,7 @@ public sealed class AuthorizationRuleMatcherTests
     [Fact]
     public void IsApplicable_Should_Reject_When_Resource_Does_Not_Match()
     {
-        var rule = CreateTenantUserRule();
+        var rule = CreateUserRule();
         var context = new AuthorizationEvaluationContext(
             "tenant-user-001",
             "resource-999",
@@ -72,7 +72,7 @@ public sealed class AuthorizationRuleMatcherTests
     [Fact]
     public void IsApplicable_Should_Reject_When_Operation_Does_Not_Match()
     {
-        var rule = CreateTenantUserRule();
+        var rule = CreateUserRule();
         var context = new AuthorizationEvaluationContext(
             "tenant-user-001",
             "resource-001",
@@ -85,9 +85,9 @@ public sealed class AuthorizationRuleMatcherTests
     }
 
     [Fact]
-    public void IsApplicable_Should_Reject_TenantUser_Rule_When_User_Does_Not_Match()
+    public void IsApplicable_Should_Reject_User_Rule_When_User_Does_Not_Match()
     {
-        var rule = CreateTenantUserRule();
+        var rule = CreateUserRule();
         var context = new AuthorizationEvaluationContext(
             "tenant-user-999",
             "resource-001",
@@ -117,7 +117,7 @@ public sealed class AuthorizationRuleMatcherTests
     [Fact]
     public void IsApplicable_Should_Reject_Mixed_Rule_When_Only_User_Matches()
     {
-        var rule = CreateTenantUserAndRoleRule();
+        var rule = CreateUserAndRoleRule();
         var context = new AuthorizationEvaluationContext(
             "tenant-user-001",
             "resource-001",
@@ -132,7 +132,7 @@ public sealed class AuthorizationRuleMatcherTests
     [Fact]
     public void IsApplicable_Should_Reject_Mixed_Rule_When_Only_Role_Matches()
     {
-        var rule = CreateTenantUserAndRoleRule();
+        var rule = CreateUserAndRoleRule();
         var context = new AuthorizationEvaluationContext(
             "tenant-user-999",
             "resource-001",
@@ -147,7 +147,7 @@ public sealed class AuthorizationRuleMatcherTests
     [Fact]
     public void IsApplicable_Should_Reject_Inactive_Rule()
     {
-        var rule = CreateTenantUserRule();
+        var rule = CreateUserRule();
         rule.Deactivate();
         var context = new AuthorizationEvaluationContext(
             "tenant-user-001",
@@ -160,13 +160,13 @@ public sealed class AuthorizationRuleMatcherTests
         result.Should().BeFalse();
     }
 
-    private static AuthorizationRule CreateTenantUserRule()
+    private static AuthorizationRule CreateUserRule()
     {
-        var tenantUser = TenantUser.Create("tenant-user-001", "tenant-001", TenantUserType.EndUser);
+        var tenantUser = User.Create("tenant-user-001", "tenant-001", UserType.EndUser);
         var resource = Resource.CreateRoot("resource-001", "app-001", "Dashboard", "dashboard");
         var operation = Operation.Create("operation-001", "app-001", "read", "Read");
 
-        return AuthorizationRule.CreateForTenantUser(
+        return AuthorizationRule.CreateForUser(
             "rule-001",
             tenantUser,
             resource,
@@ -188,14 +188,14 @@ public sealed class AuthorizationRuleMatcherTests
             AuthorizationRuleDecision.Allow);
     }
 
-    private static AuthorizationRule CreateTenantUserAndRoleRule()
+    private static AuthorizationRule CreateUserAndRoleRule()
     {
-        var tenantUser = TenantUser.Create("tenant-user-001", "tenant-001", TenantUserType.EndUser);
+        var tenantUser = User.Create("tenant-user-001", "tenant-001", UserType.EndUser);
         var role = Role.Create("role-001", "tenant-001", "Operators");
         var resource = Resource.CreateRoot("resource-001", "app-001", "Dashboard", "dashboard");
         var operation = Operation.Create("operation-001", "app-001", "read", "Read");
 
-        return AuthorizationRule.CreateForTenantUserAndRole(
+        return AuthorizationRule.CreateForUserAndRole(
             "rule-001",
             tenantUser,
             role,

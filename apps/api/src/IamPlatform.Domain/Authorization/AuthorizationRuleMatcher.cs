@@ -17,15 +17,15 @@ public sealed class AuthorizationRuleMatcher
             return false;
         }
 
-        if (rule.AppliesToTenantUserAndRole)
+        if (rule.AppliesToUserAndRole)
         {
-            return rule.TenantUserId == context.TenantUserId
+            return rule.UserId == context.UserId
                 && context.RoleIds.Contains(rule.RoleId!);
         }
 
-        if (rule.AppliesToTenantUserOnly)
+        if (rule.AppliesToUserOnly)
         {
-            return rule.TenantUserId == context.TenantUserId;
+            return rule.UserId == context.UserId;
         }
 
         if (rule.AppliesToRoleOnly)

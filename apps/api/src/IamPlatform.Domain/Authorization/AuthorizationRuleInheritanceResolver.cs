@@ -34,7 +34,7 @@ public sealed class AuthorizationRuleInheritanceResolver
                 candidate.IsActive
                 && candidate.ResourceId == parentResource.Id
                 && candidate.OperationId == rule.OperationId
-                && candidate.TenantUserId == rule.TenantUserId
+                && candidate.UserId == rule.UserId
                 && candidate.RoleId == rule.RoleId);
 
             if (parentRule is not null)
