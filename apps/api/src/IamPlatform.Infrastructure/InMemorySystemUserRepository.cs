@@ -16,9 +16,15 @@ internal sealed class InMemorySystemUserRepository : ISystemUserRepository
         return Task.FromResult(_store.SystemUsers.Count > 0);
     }
 
-    public Task AddAsync(SystemUser systemUser, CancellationToken cancellationToken = default)
-    {
-        _store.SystemUsers.Add(systemUser);
-        return Task.CompletedTask;
-    }
-}
+     public Task AddAsync(SystemUser systemUser, CancellationToken cancellationToken = default)
+     {
+         _store.SystemUsers.Add(systemUser);
+         return Task.CompletedTask;
+     }
+
+     public Task<SystemUser?> GetByIdAsync(string userId, CancellationToken cancellationToken = default)
+     {
+         var result = _store.SystemUsers.FirstOrDefault(u => u.Id == userId);
+         return Task.FromResult<SystemUser?>(result);
+     }
+ }
