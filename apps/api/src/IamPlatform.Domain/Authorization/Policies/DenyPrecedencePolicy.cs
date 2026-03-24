@@ -1,10 +1,12 @@
+using IamPlatform.Domain.Primitives;
+
 namespace IamPlatform.Domain.Authorization;
 
 public sealed class DenyPrecedencePolicy : IAuthorizationPolicy
 {
     public AuthorizationRuleDecision Aggregate(IReadOnlyList<AuthorizationRuleDecision> resolvedDecisions)
     {
-        ArgumentNullException.ThrowIfNull(resolvedDecisions);
+        Guard.Required(resolvedDecisions, nameof(resolvedDecisions));
 
         if (resolvedDecisions.Count == 0)
         {
