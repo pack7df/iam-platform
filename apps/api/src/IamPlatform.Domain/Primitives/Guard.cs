@@ -2,17 +2,35 @@ namespace IamPlatform.Domain.Primitives;
 
 public static class Guard
 {
-    public static string Required(string? value, string paramName, string message)
+    // Para cualquier tipo de referencia (objetos)
+    public static T Required<T>(T value, string paramName) where T : class
+    {
+        if (value is null)
+            throw new ArgumentNullException(paramName);
+        return value;
+    }
+
+    // Para objetos con mensaje personalizado
+    public static T Required<T>(T value, string paramName, string message) where T : class
+    {
+        if (value is null)
+            throw new ArgumentNullException(paramName, message);
+        return value;
+    }
+
+    // Para strings (devuelve string con Trim)
+    public static string Required(string? value, string paramName)
     {
         if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new ArgumentException(message, paramName);
-        }
+            throw new ArgumentException($"{paramName} is required.", paramName);
         return value.Trim();
     }
 
-    public static string Required(string? value, string paramName)
+    // Para strings con mensaje personalizado
+    public static string Required(string? value, string paramName, string message)
     {
-        return Required(value, paramName, $"{paramName} is required.");
+        if (string.IsNullOrWhiteSpace(value))
+            throw new ArgumentException(message, paramName);
+        return value.Trim();
     }
 }

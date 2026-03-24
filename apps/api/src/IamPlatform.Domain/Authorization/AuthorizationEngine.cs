@@ -1,4 +1,5 @@
 using IamPlatform.Domain.Authorization;
+using IamPlatform.Domain.Primitives;
 using IamPlatform.Domain.Tenants;
 
 namespace IamPlatform.Domain.Authorization;
@@ -25,9 +26,9 @@ public sealed class AuthorizationEngine : IAuthorizationEngine
         string operationId,
         CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(userId);
-        ArgumentNullException.ThrowIfNull(resourceId);
-        ArgumentNullException.ThrowIfNull(operationId);
+        Guard.Required(userId, nameof(userId));
+        Guard.Required(resourceId, nameof(resourceId));
+        Guard.Required(operationId, nameof(operationId));
 
         // Find applied rules recursively with on-demand data loading
         var appliedRules = await FindAppliedRulesAsync(userId, resourceId, operationId, cancellationToken);

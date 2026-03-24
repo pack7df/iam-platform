@@ -22,8 +22,8 @@ public sealed class UserRoleAssignment
 
     public static UserRoleAssignment Assign(string id, User tenantUser, Role role)
     {
-        ArgumentNullException.ThrowIfNull(tenantUser);
-        ArgumentNullException.ThrowIfNull(role);
+        Guard.Required(tenantUser, nameof(tenantUser));
+        Guard.Required(role, nameof(role));
 
         if (tenantUser.TenantId != role.TenantId)
         {

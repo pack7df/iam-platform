@@ -50,7 +50,7 @@ public sealed class AuthorizationRule
         Operation operation,
         AuthorizationRuleDecision decision)
     {
-        ArgumentNullException.ThrowIfNull(tenantUser);
+        Guard.Required(tenantUser, nameof(tenantUser));
 
         EnsureSameApplication(resource, operation);
 
@@ -64,7 +64,7 @@ public sealed class AuthorizationRule
         Operation operation,
         AuthorizationRuleDecision decision)
     {
-        ArgumentNullException.ThrowIfNull(role);
+        Guard.Required(role, nameof(role));
 
         EnsureSameApplication(resource, operation);
 
@@ -79,8 +79,8 @@ public sealed class AuthorizationRule
         Operation operation,
         AuthorizationRuleDecision decision)
     {
-        ArgumentNullException.ThrowIfNull(tenantUser);
-        ArgumentNullException.ThrowIfNull(role);
+        Guard.Required(tenantUser, nameof(tenantUser));
+        Guard.Required(role, nameof(role));
 
         if (tenantUser.TenantId != role.TenantId)
         {
@@ -135,8 +135,8 @@ public sealed class AuthorizationRule
 
     private static void EnsureSameApplication(Resource resource, Operation operation)
     {
-        ArgumentNullException.ThrowIfNull(resource);
-        ArgumentNullException.ThrowIfNull(operation);
+        Guard.Required(resource, nameof(resource));
+        Guard.Required(operation, nameof(operation));
 
         if (resource.ApplicationId != operation.ApplicationId)
         {
