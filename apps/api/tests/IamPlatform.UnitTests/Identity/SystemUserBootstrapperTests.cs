@@ -50,26 +50,32 @@ public sealed class SystemUserBootstrapperTests
         repository.AddedSystemUser.Should().BeNull();
     }
 
-    private sealed class FakeSystemUserRepository : ISystemUserRepository
-    {
-        private readonly bool _existing;
+     private sealed class FakeSystemUserRepository : ISystemUserRepository
+     {
+         private readonly bool _existing;
 
-        public FakeSystemUserRepository(bool existing)
-        {
-            _existing = existing;
-        }
+         public FakeSystemUserRepository(bool existing)
+         {
+             _existing = existing;
+         }
 
-        public SystemUser? AddedSystemUser { get; private set; }
+         public SystemUser? AddedSystemUser { get; private set; }
 
-        public Task<bool> ExistsAnySystemUserAsync(CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(_existing);
-        }
+         public Task<SystemUser?> GetByIdAsync(string userId, CancellationToken cancellationToken = default)
+         {
+             // Not needed for current tests
+             return Task.FromResult<SystemUser?>(null);
+         }
 
-        public Task AddAsync(SystemUser systemUser, CancellationToken cancellationToken = default)
-        {
-            AddedSystemUser = systemUser;
-            return Task.CompletedTask;
-        }
-    }
+         public Task<bool> ExistsAnySystemUserAsync(CancellationToken cancellationToken = default)
+         {
+             return Task.FromResult(_existing);
+         }
+
+         public Task AddAsync(SystemUser systemUser, CancellationToken cancellationToken = default)
+         {
+             AddedSystemUser = systemUser;
+             return Task.CompletedTask;
+         }
+     }
 }

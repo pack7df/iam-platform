@@ -61,14 +61,20 @@ public sealed class TenantAdminRegistrationTests
         }
     }
 
-    private sealed class FakeUserRepository : IUserRepository
-    {
-        public User? AddedUser { get; private set; }
+     private sealed class FakeUserRepository : IUserRepository
+     {
+         public User? AddedUser { get; private set; }
 
-        public Task AddAsync(User user, CancellationToken cancellationToken = default)
-        {
-            AddedUser = user;
-            return Task.CompletedTask;
-        }
-    }
+         public Task<User?> GetByIdAsync(string userId, CancellationToken cancellationToken = default)
+         {
+             // Not needed for current tests
+             return Task.FromResult<User?>(null);
+         }
+
+         public Task AddAsync(User user, CancellationToken cancellationToken = default)
+         {
+             AddedUser = user;
+             return Task.CompletedTask;
+         }
+     }
 }
