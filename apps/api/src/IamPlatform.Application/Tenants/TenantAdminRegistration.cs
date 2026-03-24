@@ -30,5 +30,3 @@ public sealed class TenantAdminRegistration
         return new TenantAdminRegistrationResult(tenant, tenantAdmin);
     }
 }
-
-public sealed record TenantAdminRegistrationResult(Tenant Tenant, User TenantAdmin);

@@ -68,11 +68,3 @@ app.MapPost("/tenant-admin-invitations", async (InviteTenantAdminRequest request
 app.Run();
 
 public partial class Program;
-
-public sealed record BootstrapSystemUserRequest(string SystemUserId);
-
-public sealed record RegisterTenantAdminRequest(string TenantId, string TenantName, string TenantAdminId);
-
-public sealed record InviteSystemUserRequest(string InvitationId, string InvitedSystemUserId);
-
-public sealed record InviteTenantAdminRequest(string InvitationId, string TenantId, string InvitedTenantAdminId);
