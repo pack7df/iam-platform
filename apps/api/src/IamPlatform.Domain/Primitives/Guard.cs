@@ -1,6 +1,6 @@
 namespace IamPlatform.Domain.Primitives;
 
-internal static class Guard
+public static class Guard
 {
     public static string Required(string? value, string paramName, string message)
     {
@@ -8,7 +8,11 @@ internal static class Guard
         {
             throw new ArgumentException(message, paramName);
         }
-
         return value.Trim();
+    }
+
+    public static string Required(string? value, string paramName)
+    {
+        return Required(value, paramName, $"{paramName} is required.");
     }
 }
