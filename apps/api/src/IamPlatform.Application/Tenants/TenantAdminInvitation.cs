@@ -23,5 +23,3 @@ public sealed class TenantAdminInvitation
         return new TenantAdminInvitationResult(invitation);
     }
 }
-
-public sealed record TenantAdminInvitationResult(Invitation Invitation);

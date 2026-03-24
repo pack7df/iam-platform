@@ -22,5 +22,3 @@ public sealed class SystemUserInvitation
         return new SystemUserInvitationResult(invitation);
     }
 }
-
-public sealed record SystemUserInvitationResult(Invitation Invitation);
