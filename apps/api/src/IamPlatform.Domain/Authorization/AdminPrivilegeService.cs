@@ -1,3 +1,4 @@
+using IamPlatform.Domain.Primitives;
 using IamPlatform.Domain.Identity;
 using IamPlatform.Domain.Tenants;
 
@@ -18,15 +19,15 @@ public sealed class AdminPrivilegeService : IAdminPrivilegeService
 
     public async Task<bool> HasGlobalAdminPrivilegesAsync(string userId, CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrEmpty(userId);
+        Guard.Required(userId, nameof(userId));
         var systemUser = await _systemUserRepository.GetByIdAsync(userId, cancellationToken);
         return systemUser is not null;
     }
 
     public async Task<bool> HasTenantAdminPrivilegesAsync(string tenantId, string userId, CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrEmpty(tenantId);
-        ArgumentException.ThrowIfNullOrEmpty(userId);
+        Guard.Required(tenantId, nameof(tenantId));
+        Guard.Required(userId, nameof(userId));
         var tenantUser = await _tenantUserRepository.GetByIdAsync(userId, cancellationToken);
         return tenantUser is not null
                && tenantUser.TenantId == tenantId
