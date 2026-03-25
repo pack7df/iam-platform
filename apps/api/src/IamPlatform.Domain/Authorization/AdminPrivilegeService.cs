@@ -1,36 +1,47 @@
 using IamPlatform.Domain.Primitives;
-using IamPlatform.Domain.Identity;
 using IamPlatform.Domain.Tenants;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace IamPlatform.Domain.Authorization;
 
 public sealed class AdminPrivilegeService : IAdminPrivilegeService
 {
-    private readonly ISystemUserRepository _systemUserRepository;
-    private readonly IUserRepository _tenantUserRepository;
+    private readonly IUserRepository _userRepository;
 
-    public AdminPrivilegeService(
-        ISystemUserRepository systemUserRepository,
-        IUserRepository tenantUserRepository)
+    public AdminPrivilegeService(IUserRepository userRepository)
     {
-        _systemUserRepository = systemUserRepository;
-        _tenantUserRepository = tenantUserRepository;
+        _userRepository = userRepository;
     }
 
     public async Task<bool> HasGlobalAdminPrivilegesAsync(string userId, CancellationToken cancellationToken = default)
     {
         Guard.Required(userId, nameof(userId));
-        var systemUser = await _systemUserRepository.GetByIdAsync(userId, cancellationToken);
-        return systemUser is not null;
+        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        return user?.Type == UserType.SystemUser;
     }
 
     public async Task<bool> HasTenantAdminPrivilegesAsync(string tenantId, string userId, CancellationToken cancellationToken = default)
     {
         Guard.Required(tenantId, nameof(tenantId));
         Guard.Required(userId, nameof(userId));
-        var tenantUser = await _tenantUserRepository.GetByIdAsync(userId, cancellationToken);
-        return tenantUser is not null
-               && tenantUser.TenantId == tenantId
-               && tenantUser.Type == UserType.TenantAdmin;
+        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+        if (user is null)
+        {
+            return false;
+        }
+
+        if (user.Type == UserType.SystemUser)
+        {
+            // System users have global privileges, so they have admin privileges in any tenant
+            return true;
+        }
+
+        if (user.Type != UserType.TenantAdmin)
+        {
+            return false;
+        }
+
+        return user.TenantId == tenantId;
     }
 }

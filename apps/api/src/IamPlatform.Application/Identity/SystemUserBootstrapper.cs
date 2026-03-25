@@ -1,27 +1,34 @@
+using IamPlatform.Domain.Common;
 using IamPlatform.Domain.Identity;
+using IamPlatform.Domain.Tenants;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace IamPlatform.Application.Identity;
 
 public sealed class SystemUserBootstrapper : ISystemUserBootstrapper
 {
-    private readonly ISystemUserRepository _systemUserRepository;
+    private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _uow;
 
-    public SystemUserBootstrapper(ISystemUserRepository systemUserRepository)
+    public SystemUserBootstrapper(IUserRepository userRepository, IUnitOfWork uow)
     {
-        _systemUserRepository = systemUserRepository;
+        _userRepository = userRepository;
+        _uow = uow;
     }
 
     public async Task<SystemUserBootstrapResult> BootstrapAsync(
         string systemUserId,
         CancellationToken cancellationToken = default)
     {
-        if (await _systemUserRepository.ExistsAnySystemUserAsync(cancellationToken))
+        if (await _userRepository.ExistsByTypeAsync(UserType.SystemUser, cancellationToken))
         {
             return SystemUserBootstrapResult.AlreadyBootstrapped();
         }
 
-        var systemUser = SystemUser.Create(systemUserId);
-        await _systemUserRepository.AddAsync(systemUser, cancellationToken);
+        var systemUser = User.CreateSystemUser(systemUserId);
+        await _userRepository.AddAsync(systemUser, cancellationToken);
+        await _uow.SaveChangesAsync(cancellationToken);
 
         return SystemUserBootstrapResult.Created(systemUser);
     }

@@ -1,6 +1,5 @@
 using FluentAssertions;
 using IamPlatform.Domain.Authorization;
-using IamPlatform.Domain.Identity;
 using IamPlatform.Domain.Tenants;
 using Xunit;
 
@@ -13,9 +12,9 @@ public sealed class AdminPrivilegeServiceTests
     {
         // Arrange
         var userId = "sys-user-001";
-        var systemUser = SystemUser.Create(userId);
-        var repo = new FakeSystemUserRepository(new[] { systemUser });
-        var service = new AdminPrivilegeService(repo, new FakeTenantUserRepository(Array.Empty<User>()));
+        var systemUser = User.CreateSystemUser(userId);
+        var repo = new FakeUserRepository(new[] { systemUser });
+        var service = new AdminPrivilegeService(repo);
 
         // Act
         var result = await service.HasGlobalAdminPrivilegesAsync(userId);
@@ -29,8 +28,8 @@ public sealed class AdminPrivilegeServiceTests
     {
         // Arrange
         var userId = "non-existent";
-        var repo = new FakeSystemUserRepository(Array.Empty<SystemUser>());
-        var service = new AdminPrivilegeService(repo, new FakeTenantUserRepository(Array.Empty<User>()));
+        var repo = new FakeUserRepository(Array.Empty<User>());
+        var service = new AdminPrivilegeService(repo);
 
         // Act
         var result = await service.HasGlobalAdminPrivilegesAsync(userId);
@@ -46,8 +45,8 @@ public sealed class AdminPrivilegeServiceTests
         var tenantId = "tenant-001";
         var userId = "tenant-admin-001";
         var tenantAdmin = User.Create(userId, tenantId, UserType.TenantAdmin);
-        var repo = new FakeTenantUserRepository(new[] { tenantAdmin });
-        var service = new AdminPrivilegeService(new FakeSystemUserRepository(Array.Empty<SystemUser>()), repo);
+        var repo = new FakeUserRepository(new[] { tenantAdmin });
+        var service = new AdminPrivilegeService(repo);
 
         // Act
         var result = await service.HasTenantAdminPrivilegesAsync(tenantId, userId);
@@ -63,8 +62,8 @@ public sealed class AdminPrivilegeServiceTests
         var tenantId = "tenant-001";
         var userId = "end-user-001";
         var endUser = User.Create(userId, tenantId, UserType.EndUser);
-        var repo = new FakeTenantUserRepository(new[] { endUser });
-        var service = new AdminPrivilegeService(new FakeSystemUserRepository(Array.Empty<SystemUser>()), repo);
+        var repo = new FakeUserRepository(new[] { endUser });
+        var service = new AdminPrivilegeService(repo);
 
         // Act
         var result = await service.HasTenantAdminPrivilegesAsync(tenantId, userId);
@@ -80,8 +79,8 @@ public sealed class AdminPrivilegeServiceTests
         var tenantId = "tenant-001";
         var userId = "tenant-admin-002";
         var tenantAdmin = User.Create(userId, "tenant-002", UserType.TenantAdmin);
-        var repo = new FakeTenantUserRepository(new[] { tenantAdmin });
-        var service = new AdminPrivilegeService(new FakeSystemUserRepository(Array.Empty<SystemUser>()), repo);
+        var repo = new FakeUserRepository(new[] { tenantAdmin });
+        var service = new AdminPrivilegeService(repo);
 
         // Act
         var result = await service.HasTenantAdminPrivilegesAsync(tenantId, userId);
@@ -96,8 +95,8 @@ public sealed class AdminPrivilegeServiceTests
         // Arrange
         var tenantId = "tenant-001";
         var userId = "non-existent";
-        var repo = new FakeTenantUserRepository(Array.Empty<User>());
-        var service = new AdminPrivilegeService(new FakeSystemUserRepository(Array.Empty<SystemUser>()), repo);
+        var repo = new FakeUserRepository(Array.Empty<User>());
+        var service = new AdminPrivilegeService(repo);
 
         // Act
         var result = await service.HasTenantAdminPrivilegesAsync(tenantId, userId);
@@ -106,38 +105,28 @@ public sealed class AdminPrivilegeServiceTests
         result.Should().BeFalse();
     }
 
-    private sealed class FakeSystemUserRepository : ISystemUserRepository
+    [Fact]
+    public async Task HasTenantAdminPrivilegesAsync_Should_Return_True_For_SystemUser()
     {
-        private readonly List<SystemUser> _users;
+        // Arrange
+        var tenantId = "any-tenant";
+        var userId = "sys-user-001";
+        var systemUser = User.CreateSystemUser(userId);
+        var repo = new FakeUserRepository(new[] { systemUser });
+        var service = new AdminPrivilegeService(repo);
 
-        public FakeSystemUserRepository(IEnumerable<SystemUser> users)
-        {
-            _users = users.ToList();
-        }
+        // Act
+        var result = await service.HasTenantAdminPrivilegesAsync(tenantId, userId);
 
-        public Task<SystemUser?> GetByIdAsync(string userId, CancellationToken cancellationToken = default)
-        {
-            var result = _users.FirstOrDefault(u => u.Id == userId);
-            return Task.FromResult<SystemUser?>(result);
-        }
-
-        public Task<bool> ExistsAnySystemUserAsync(CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(_users.Any());
-        }
-
-        public Task AddAsync(SystemUser systemUser, CancellationToken cancellationToken = default)
-        {
-            _users.Add(systemUser);
-            return Task.CompletedTask;
-        }
+        // Assert
+        result.Should().BeTrue(); // SystemUser has global admin privileges
     }
 
-    private sealed class FakeTenantUserRepository : IUserRepository
+    private sealed class FakeUserRepository : IUserRepository
     {
         private readonly List<User> _users;
 
-        public FakeTenantUserRepository(IEnumerable<User> users)
+        public FakeUserRepository(IEnumerable<User> users)
         {
             _users = users.ToList();
         }
@@ -154,10 +143,17 @@ public sealed class AdminPrivilegeServiceTests
             return Task.CompletedTask;
         }
 
+        public Task UpdateAsync(User user, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
         public Task<IReadOnlyCollection<User>> GetByTenantIdAsync(string tenantId, CancellationToken cancellationToken = default)
         {
             var result = _users.Where(u => u.TenantId == tenantId).ToList();
             return Task.FromResult<IReadOnlyCollection<User>>(result);
+        }
+
+        public Task<bool> ExistsByTypeAsync(UserType type, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(_users.Any(u => u.Type == type));
         }
     }
 }

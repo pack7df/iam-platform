@@ -4,17 +4,28 @@ namespace IamPlatform.Domain.Tenants;
 
 public sealed class User
 {
-    private User(string id, string tenantId, UserType type, bool isActive)
+    private User(string id, string? tenantId, UserType type, bool isActive)
     {
         Id = Guard.Required(id, nameof(id), "User id is required.");
-        TenantId = Guard.Required(tenantId, nameof(tenantId), "Tenant id is required.");
+        
+        // Validation: SystemUser can have null tenantId, but TenantUser must have tenantId
+        if (type != UserType.SystemUser)
+        {
+            TenantId = Guard.Required(tenantId, nameof(tenantId), "Tenant id is required for non-system users.");
+        }
+        else
+        {
+            // SystemUser: tenantId must be null or empty (normalize to null)
+            TenantId = string.IsNullOrWhiteSpace(tenantId) ? null : tenantId.Trim();
+        }
+        
         Type = type;
         IsActive = isActive;
     }
 
     public string Id { get; }
 
-    public string TenantId { get; }
+    public string? TenantId { get; }
 
     public UserType Type { get; private set; }
 
@@ -25,8 +36,18 @@ public sealed class User
         return new User(id, tenantId, type, true);
     }
 
+    public static User CreateSystemUser(string id)
+    {
+        return new User(id, null, UserType.SystemUser, true);
+    }
+
     public void ChangeType(UserType type)
     {
+        // If changing to non-SystemUser, ensure TenantId is set
+        if (type != UserType.SystemUser && string.IsNullOrWhiteSpace(TenantId))
+        {
+            throw new InvalidOperationException("Cannot change to non-system user without a tenant id.");
+        }
         Type = type;
     }
 

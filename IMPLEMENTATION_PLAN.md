@@ -179,18 +179,16 @@ Dejar listo el esqueleto tecnico y cerrar las decisiones minimas que bloquean la
 5. Tarea `0.8`.
 6. Tarea `0.9`.
 
+**Estado:** ✅ **Completada**
+
 ## Etapa 1 - Core de identidad, tenancy y administracion basica
 ### Objetivo
 Construir el nucleo de identidades y limites del sistema, antes de entrar al motor de autorizacion.
 
-### Alcance
-- Modelar `SystemUser` y bootstrap del primer usuario de sistema.
-- Modelar `Tenant`, `TenantUser` y tipos de usuario de tenant.
-- Modelar `Role` y `Application` dentro del tenant.
-- Modelar invitaciones de usuario de sistema y tenant admin.
-- Implementar casos de uso de registro de tenant admin creando tenant.
-- Implementar casos de uso de invitacion de system users y tenant admins.
-- Implementar privilegios implicitos de `SystemUser` y `TenantAdmin` fuera del motor de reglas.
+### Resumen de Ejecución
+Durante esta etapa se tomó la decisión técnica de **unificar el modelo de usuario**. En lugar de tener entidades separadas para `SystemUser` y `TenantUser`, se utiliza una única entidad `User` con un `UserType`. Esto simplifica la persistencia y la lógica de autenticación centralizada.
+
+**Estado:** ✅ **Completada**
 
 ### Entregables
 - Entidades, value objects y reglas de invariantes del core.
@@ -543,18 +541,18 @@ Conectar el modelo a PostgreSQL y exponer APIs suficientes para administrar el c
 - PR title sugerido: `[task-3.6] feat: implement UserRoleAssignmentRepository`
 - **Precondición**: Tarea 3.5 completada
 
-#### Tarea 3.7 - Implementar repositorios restantes (opcional si faltan)
+#### Tarea 3.7 - Implementar repositorios restantes
 - Objetivo: Asegurar que todos los repositorios del dominio tengan implementación EF Core.
 - Alcance:
-  - `IUserRepository` → `UserRepository`
-  - `IRoleRepository` (si existe)
-  - `IApplicationRepository` (si existe)
-  - `ITenantRepository` (ya puede existir, verificar)
+  - `IUserRepository` → `UserRepository` (unificado para todos los tipos de usuario)
+  - `IRoleRepository`
+  - `IApplicationRepository`
+  - `ITenantRepository`
 - Entregables:
-  - Repositorios faltantes
-  - Tests de integración
-- Criterio de revisión:
-  - Todos los I*Repository del dominio tienen implementación EF Core
+  - Repositorios actualizados.
+  - Tests de integración.
+
+**Estado:** 🚧 **En progreso** (Ya existen implementaciones `InMemory` unificadas preparadas para el cambio a EF Core).
 - Branch sugerida: `feat/task-3.7-remaining-repositories`
 - PR title sugerido: `[task-3.7] feat: complete remaining EF Core repositories`
 - **Precondición**: Tarea 3.6 completada

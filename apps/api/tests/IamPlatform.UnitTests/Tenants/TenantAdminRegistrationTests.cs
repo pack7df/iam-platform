@@ -12,7 +12,8 @@ public sealed class TenantAdminRegistrationTests
     {
         var tenantRepository = new FakeTenantRepository();
         var userRepository = new FakeUserRepository();
-        var registration = new TenantAdminRegistration(tenantRepository, userRepository);
+        var uow = new FakeUnitOfWork();
+        var registration = new TenantAdminRegistration(tenantRepository, userRepository, uow);
 
         var result = await registration.RegisterAsync("tenant-001", "Acme Corp", "tenant-admin-001");
 
@@ -23,6 +24,7 @@ public sealed class TenantAdminRegistrationTests
         result.TenantAdmin.Type.Should().Be(UserType.TenantAdmin);
         tenantRepository.AddedTenant.Should().NotBeNull();
         userRepository.AddedUser.Should().NotBeNull();
+        uow.SaveChangesCalled.Should().BeTrue();
     }
 
     [Theory]
@@ -40,7 +42,8 @@ public sealed class TenantAdminRegistrationTests
     {
         var tenantRepository = new FakeTenantRepository();
         var userRepository = new FakeUserRepository();
-        var registration = new TenantAdminRegistration(tenantRepository, userRepository);
+        var uow = new FakeUnitOfWork();
+        var registration = new TenantAdminRegistration(tenantRepository, userRepository, uow);
 
         var act = () => registration.RegisterAsync(tenantId, tenantName, tenantAdminId);
 
@@ -54,27 +57,41 @@ public sealed class TenantAdminRegistrationTests
     {
         public Tenant? AddedTenant { get; private set; }
 
+        public Task<Tenant?> GetByIdAsync(string id, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
         public Task AddAsync(Tenant tenant, CancellationToken cancellationToken = default)
         {
             AddedTenant = tenant;
             return Task.CompletedTask;
         }
+
+        public Task UpdateAsync(Tenant tenant, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     }
 
-     private sealed class FakeUserRepository : IUserRepository
-     {
-         public User? AddedUser { get; private set; }
+      private sealed class FakeUserRepository : IUserRepository
+      {
+          public User? AddedUser { get; private set; }
 
-         public Task<User?> GetByIdAsync(string userId, CancellationToken cancellationToken = default)
-         {
-             // Not needed for current tests
-             return Task.FromResult<User?>(null);
-         }
+          public Task<User?> GetByIdAsync(string userId, CancellationToken cancellationToken = default)
+          {
+              // Not needed for current tests
+              return Task.FromResult<User?>(null);
+          }
 
-         public Task AddAsync(User user, CancellationToken cancellationToken = default)
-         {
-             AddedUser = user;
-             return Task.CompletedTask;
-         }
-     }
+          public Task AddAsync(User user, CancellationToken cancellationToken = default)
+          {
+              AddedUser = user;
+              return Task.CompletedTask;
+          }
+
+          public Task UpdateAsync(User user, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+          public Task<IReadOnlyCollection<User>> GetByTenantIdAsync(string tenantId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+          public Task<bool> ExistsByTypeAsync(UserType type, CancellationToken cancellationToken = default)
+          {
+              // Not needed for current tests
+              return Task.FromResult(false);
+          }
+      }
 }

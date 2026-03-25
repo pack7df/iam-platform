@@ -1,5 +1,10 @@
+using IamPlatform.Domain.Authorization;
+using IamPlatform.Domain.Common;
 using IamPlatform.Domain.Identity;
 using IamPlatform.Domain.Tenants;
+using IamPlatform.Infrastructure.Persistence;
+using IamPlatform.Infrastructure.Persistence.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,12 +14,19 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton<InMemoryIdentityStore>();
-        services.AddSingleton<InMemoryTenantStore>();
-        services.AddSingleton<ISystemUserRepository, InMemorySystemUserRepository>();
-        services.AddSingleton<IInvitationRepository, InMemoryInvitationRepository>();
-        services.AddSingleton<ITenantRepository, InMemoryTenantRepository>();
-        services.AddSingleton<IUserRepository, InMemoryUserRepository>();
+        // Configure DbContext with PostgreSQL
+        var connectionString = configuration.GetConnectionString("IamPlatform");
+        services.AddDbContext<IamPlatformDbContext>(options =>
+            options.UseNpgsql(connectionString));
+            
+        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<IamPlatformDbContext>());
+            
+         // In-memory stores (will be replaced by EF repositories in later tasks)
+         // Repositories (EF Core)
+         services.AddScoped<IResourceRepository, ResourceRepository>();
+         services.AddScoped<IInvitationRepository, InvitationRepository>();
+         services.AddScoped<ITenantRepository, TenantRepository>();
+         services.AddScoped<IUserRepository, UserRepository>();
 
         return services;
     }
