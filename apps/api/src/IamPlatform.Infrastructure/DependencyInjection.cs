@@ -2,6 +2,7 @@ using IamPlatform.Domain.Authorization;
 using IamPlatform.Domain.Identity;
 using IamPlatform.Domain.Tenants;
 using IamPlatform.Infrastructure.Persistence;
+using IamPlatform.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,11 +19,11 @@ public static class DependencyInjection
             options.UseNpgsql(connectionString));
             
          // In-memory stores (will be replaced by EF repositories in later tasks)
-         services.AddSingleton<InMemoryTenantStore>();
-         services.AddSingleton<InMemoryIdentityStore>();
-         services.AddSingleton<IInvitationRepository, InMemoryInvitationRepository>();
-         services.AddSingleton<ITenantRepository, InMemoryTenantRepository>();
-         services.AddSingleton<IUserRepository, InMemoryUserRepository>();
+         // Repositories (EF Core)
+         services.AddScoped<IResourceRepository, ResourceRepository>();
+         services.AddScoped<IInvitationRepository, InvitationRepository>();
+         services.AddScoped<ITenantRepository, TenantRepository>();
+         services.AddScoped<IUserRepository, UserRepository>();
 
         return services;
     }

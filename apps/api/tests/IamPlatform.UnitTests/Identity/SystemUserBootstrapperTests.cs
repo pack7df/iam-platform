@@ -79,5 +79,9 @@ public sealed class SystemUserBootstrapperTests
             AddedUser = user;
             return Task.CompletedTask;
         }
+
+        public Task UpdateAsync(User user, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<IReadOnlyCollection<User>> GetByTenantIdAsync(string tenantId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     }
 }

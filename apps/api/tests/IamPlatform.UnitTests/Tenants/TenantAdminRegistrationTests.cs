@@ -54,11 +54,15 @@ public sealed class TenantAdminRegistrationTests
     {
         public Tenant? AddedTenant { get; private set; }
 
+        public Task<Tenant?> GetByIdAsync(string id, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
         public Task AddAsync(Tenant tenant, CancellationToken cancellationToken = default)
         {
             AddedTenant = tenant;
             return Task.CompletedTask;
         }
+
+        public Task UpdateAsync(Tenant tenant, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     }
 
       private sealed class FakeUserRepository : IUserRepository
@@ -76,6 +80,10 @@ public sealed class TenantAdminRegistrationTests
               AddedUser = user;
               return Task.CompletedTask;
           }
+
+          public Task UpdateAsync(User user, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+          public Task<IReadOnlyCollection<User>> GetByTenantIdAsync(string tenantId, CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
           public Task<bool> ExistsByTypeAsync(UserType type, CancellationToken cancellationToken = default)
           {

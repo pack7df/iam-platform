@@ -51,10 +51,14 @@ public sealed class TenantAdminInvitationTests
     {
         public Invitation? AddedInvitation { get; private set; }
 
+        public Task<Invitation?> GetByIdAsync(string id, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
         public Task AddAsync(Invitation invitation, CancellationToken cancellationToken = default)
         {
             AddedInvitation = invitation;
             return Task.CompletedTask;
         }
+
+        public Task UpdateAsync(Invitation invitation, CancellationToken cancellationToken = default) => throw new NotImplementedException();
     }
 }

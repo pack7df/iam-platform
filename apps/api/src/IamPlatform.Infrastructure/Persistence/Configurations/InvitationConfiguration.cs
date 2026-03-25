@@ -47,7 +47,7 @@ public sealed class InvitationConfiguration : IEntityTypeConfiguration<Invitatio
         builder.Property<DateTime?>("AcceptedAt");
             
         // Relationships
-        builder.HasOne<User>()
+        builder.HasOne<Tenant>()
             .WithMany()
             .HasForeignKey(i => i.TenantId)
             .OnDelete(DeleteBehavior.Cascade);
