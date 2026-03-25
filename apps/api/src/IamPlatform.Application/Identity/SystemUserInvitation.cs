@@ -2,7 +2,7 @@ using IamPlatform.Domain.Identity;
 
 namespace IamPlatform.Application.Identity;
 
-public sealed class SystemUserInvitation
+public sealed class SystemUserInvitation : ISystemUserInvitation
 {
     private readonly IInvitationRepository _invitationRepository;
 
@@ -22,5 +22,3 @@ public sealed class SystemUserInvitation
         return new SystemUserInvitationResult(invitation);
     }
 }
-
-public sealed record SystemUserInvitationResult(Invitation Invitation);

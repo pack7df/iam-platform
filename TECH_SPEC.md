@@ -98,6 +98,12 @@
 - `I`: las interfaces deben ser pequenas y enfocadas por caso de uso.
 - `D`: la logica de dominio y aplicacion no debe depender de detalles de infraestructura.
 
+## Reglas de implementación
+- Evitar métodos con código muy largo (más de ~30 líneas). Dividir en métodos más pequeños y con nombres descriptivos.
+- Minimizar la anidación de código. Preferir retornos anticipados (early returns) y guard clauses en lugar de `else` anidados.
+- Mantener la lógica de dominio en las entidades y servicios de dominio, no en la capa de aplicación.
+- Usar factories estáticas en entidades cuando la creación sea simple; solo usar factories inyectables cuando haya lógica compleja o múltiples variantes.
+
 ## Estrategia de testing
 - Se adopta TDD como flujo por defecto: `red -> green -> refactor`.
 - La logica de dominio debe empezar por tests unitarios antes de implementar la solucion.
@@ -226,4 +232,6 @@
 - Como se expondra el SSO para aplicaciones externas: OIDC, OAuth2 u otro protocolo?
 - El servidor estatico del frontend sera `nginx`, `caddy` u otra opcion?
 - La API seguira un estilo REST clasico con controllers o una variante mas vertical por feature?
+  - Si es vertical por feature, como se mapearan los endpoints a los servicios de aplicacion (ej: en Program.cs, clases estáticas, controladores ligeros)?
+  - Se debe establecer una convención clara de que los endpoints solo delegan a servicios de aplicación y no contienen lógica de negocio.
 - Como se resolvera la gestion de secretos y configuracion por ambiente?
