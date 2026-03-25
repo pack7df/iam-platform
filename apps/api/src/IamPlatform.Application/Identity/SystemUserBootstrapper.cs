@@ -2,7 +2,7 @@ using IamPlatform.Domain.Identity;
 
 namespace IamPlatform.Application.Identity;
 
-public sealed class SystemUserBootstrapper
+public sealed class SystemUserBootstrapper : ISystemUserBootstrapper
 {
     private readonly ISystemUserRepository _systemUserRepository;
 

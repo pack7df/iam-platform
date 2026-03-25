@@ -8,10 +8,10 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services.AddScoped<SystemUserBootstrapper>();
-        services.AddScoped<SystemUserInvitation>();
-        services.AddScoped<TenantAdminRegistration>();
-        services.AddScoped<TenantAdminInvitation>();
+        services.AddScoped<ISystemUserBootstrapper, SystemUserBootstrapper>();
+        services.AddScoped<ISystemUserInvitation, SystemUserInvitation>();
+        services.AddScoped<ITenantAdminRegistration, TenantAdminRegistration>();
+        services.AddScoped<ITenantAdminInvitation, TenantAdminInvitation>();
 
         return services;
     }

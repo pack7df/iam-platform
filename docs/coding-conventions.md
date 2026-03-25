@@ -51,9 +51,65 @@ Utils.cs         -> multiple unrelated static helper classes
 
 ---
 
+## Dependency Injection: Always Inject Interfaces, Never Concrete Types
+
+When injecting dependencies via constructors, method parameters, or endpoints, **always use interfaces, never concrete implementations**. This rule applies to:
+
+- Constructor parameters in classes (Application Services, Domain Services, etc.)
+- Endpoint parameters in Minimal APIs (Program.cs)
+- Controller constructors (if used)
+- Service registrations in DependencyInjection classes
+
+### Examples
+
+✅ **Correct:**
+```csharp
+// Minimal API endpoint
+app.MapPost("/system-user-invitations", 
+    async (InviteSystemUserRequest request, ISystemUserInvitation invitationService, CancellationToken cancellationToken) => { ... });
+
+// Constructor
+public sealed class SystemUserBootstrapper : ISystemUserBootstrapper
+{
+    public SystemUserBootstrapper(ISystemUserRepository systemUserRepository) { ... }
+}
+
+// Registration
+services.AddScoped<ISystemUserBootstrapper, SystemUserBootstrapper>();
+```
+
+❌ **Avoid:**
+```csharp
+// BAD: concrete type in endpoint
+app.MapPost("/system-user-invitations", 
+    async (InviteSystemUserRequest request, SystemUserInvitation invitationService, ...) => { ... });
+
+// BAD: concrete type in constructor
+public SystemUserBootstrapper(SystemUserRepository systemUserRepository) { ... }
+```
+
+### Rationale
+
+- **Testability**: Interfaces enable easy mocking and stubbing in tests
+- **SOLID - Dependency Inversion Principle**: Depend on abstractions, not implementations
+- **Flexibility**: Swap implementations without changing consumers
+- **Clarity**: Interfaces define explicit contracts
+- **Consistency**: Keeps architecture layers clean and decoupled
+
+### Exception
+
+Only concrete types may be injected when:
+- The type is a simple DTO/record with no behavior (e.g., `BootstrapSystemUserRequest`, `RegisterTenantAdminRequest`)
+- The type is a primitive or built-in .NET type (`string`, `int`, `CancellationToken`, etc.)
+
+---
+
 ## Additional Notes
 
 This convention aligns with:
-- SOLID Single Responsibility Principle
-- Clean Architecture guidelines
+- **SOLID** Single Responsibility & Dependency Inversion Principles
+- **Clean Architecture** dependency rule (dependencies point inward)
+- **TDD** practices (easy mocking)
 - Team development best practices
+
+All code reviews should verify this rule is followed.

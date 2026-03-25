@@ -2,7 +2,7 @@ using IamPlatform.Domain.Identity;
 
 namespace IamPlatform.Application.Identity;
 
-public sealed class SystemUserInvitation
+public sealed class SystemUserInvitation : ISystemUserInvitation
 {
     private readonly IInvitationRepository _invitationRepository;
 
