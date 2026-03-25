@@ -17,13 +17,11 @@ public static class DependencyInjection
         services.AddDbContext<IamPlatformDbContext>(options =>
             options.UseNpgsql(connectionString));
             
-        // In-memory stores (will be replaced by EF repositories in later tasks)
-        services.AddSingleton<InMemoryIdentityStore>();
-        services.AddSingleton<InMemoryTenantStore>();
-        services.AddSingleton<ISystemUserRepository, InMemorySystemUserRepository>();
-        services.AddSingleton<IInvitationRepository, InMemoryInvitationRepository>();
-        services.AddSingleton<ITenantRepository, InMemoryTenantRepository>();
-        services.AddSingleton<IUserRepository, InMemoryUserRepository>();
+         // In-memory stores (will be replaced by EF repositories in later tasks)
+         services.AddSingleton<InMemoryTenantStore>();
+         services.AddSingleton<IInvitationRepository, InMemoryInvitationRepository>();
+         services.AddSingleton<ITenantRepository, InMemoryTenantRepository>();
+         services.AddSingleton<IUserRepository, InMemoryUserRepository>();
 
         return services;
     }

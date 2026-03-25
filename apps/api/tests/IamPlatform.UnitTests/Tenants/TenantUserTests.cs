@@ -36,7 +36,7 @@ public sealed class UserTests
         var act = () => User.Create("user-001", invalidTenantId, UserType.EndUser);
 
         act.Should().Throw<ArgumentException>()
-            .WithMessage("Tenant id is required.*");
+            .WithMessage("Tenant id is required for non-system users.*");
     }
 
     [Fact]
