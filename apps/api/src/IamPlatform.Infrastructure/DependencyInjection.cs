@@ -1,4 +1,5 @@
 using IamPlatform.Domain.Authorization;
+using IamPlatform.Domain.Common;
 using IamPlatform.Domain.Identity;
 using IamPlatform.Domain.Tenants;
 using IamPlatform.Infrastructure.Persistence;
@@ -17,6 +18,8 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("IamPlatform");
         services.AddDbContext<IamPlatformDbContext>(options =>
             options.UseNpgsql(connectionString));
+            
+        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<IamPlatformDbContext>());
             
          // In-memory stores (will be replaced by EF repositories in later tasks)
          // Repositories (EF Core)

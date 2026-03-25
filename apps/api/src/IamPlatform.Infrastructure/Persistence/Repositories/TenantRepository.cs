@@ -21,7 +21,6 @@ public sealed class TenantRepository : ITenantRepository
     public async Task AddAsync(Tenant tenant, CancellationToken cancellationToken = default)
     {
         await _context.Tenants.AddAsync(tenant, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task UpdateAsync(Tenant tenant, CancellationToken cancellationToken = default)

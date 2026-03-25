@@ -1,3 +1,4 @@
+using IamPlatform.Domain.Common;
 using IamPlatform.Domain.Identity;
 using IamPlatform.Domain.Tenants;
 using System.Threading;
@@ -8,10 +9,12 @@ namespace IamPlatform.Application.Identity;
 public sealed class SystemUserBootstrapper : ISystemUserBootstrapper
 {
     private readonly IUserRepository _userRepository;
+    private readonly IUnitOfWork _uow;
 
-    public SystemUserBootstrapper(IUserRepository userRepository)
+    public SystemUserBootstrapper(IUserRepository userRepository, IUnitOfWork uow)
     {
         _userRepository = userRepository;
+        _uow = uow;
     }
 
     public async Task<SystemUserBootstrapResult> BootstrapAsync(
@@ -25,6 +28,7 @@ public sealed class SystemUserBootstrapper : ISystemUserBootstrapper
 
         var systemUser = User.CreateSystemUser(systemUserId);
         await _userRepository.AddAsync(systemUser, cancellationToken);
+        await _uow.SaveChangesAsync(cancellationToken);
 
         return SystemUserBootstrapResult.Created(systemUser);
     }

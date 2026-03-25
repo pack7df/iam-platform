@@ -11,7 +11,8 @@ public sealed class SystemUserBootstrapperTests
     public async Task BootstrapAsync_Should_Create_SystemUser_When_None_Exists()
     {
         var repository = new FakeUserRepository(existing: false);
-        var bootstrapper = new SystemUserBootstrapper(repository);
+        var uow = new FakeUnitOfWork();
+        var bootstrapper = new SystemUserBootstrapper(repository, uow);
 
         var result = await bootstrapper.BootstrapAsync("system-user-001");
 
@@ -22,13 +23,15 @@ public sealed class SystemUserBootstrapperTests
         repository.AddedUser.Should().NotBeNull();
         repository.AddedUser!.Id.Should().Be("system-user-001");
         repository.AddedUser.Type.Should().Be(UserType.SystemUser);
+        uow.SaveChangesCalled.Should().BeTrue();
     }
 
     [Fact]
     public async Task BootstrapAsync_Should_Reject_When_SystemUser_Already_Exists()
     {
         var repository = new FakeUserRepository(existing: true);
-        var bootstrapper = new SystemUserBootstrapper(repository);
+        var uow = new FakeUnitOfWork();
+        var bootstrapper = new SystemUserBootstrapper(repository, uow);
 
         var result = await bootstrapper.BootstrapAsync("system-user-001");
 
@@ -43,7 +46,8 @@ public sealed class SystemUserBootstrapperTests
     public async Task BootstrapAsync_Should_Reject_Invalid_Id(string invalidId)
     {
         var repository = new FakeUserRepository(existing: false);
-        var bootstrapper = new SystemUserBootstrapper(repository);
+        var uow = new FakeUnitOfWork();
+        var bootstrapper = new SystemUserBootstrapper(repository, uow);
 
         var act = () => bootstrapper.BootstrapAsync(invalidId);
 

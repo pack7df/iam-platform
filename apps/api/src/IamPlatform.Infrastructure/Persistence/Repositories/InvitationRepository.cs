@@ -21,7 +21,6 @@ public sealed class InvitationRepository : IInvitationRepository
     public async Task AddAsync(Invitation invitation, CancellationToken cancellationToken = default)
     {
         await _context.Invitations.AddAsync(invitation, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task UpdateAsync(Invitation invitation, CancellationToken cancellationToken = default)

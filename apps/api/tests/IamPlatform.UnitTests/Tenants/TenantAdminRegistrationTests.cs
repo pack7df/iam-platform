@@ -12,7 +12,8 @@ public sealed class TenantAdminRegistrationTests
     {
         var tenantRepository = new FakeTenantRepository();
         var userRepository = new FakeUserRepository();
-        var registration = new TenantAdminRegistration(tenantRepository, userRepository);
+        var uow = new FakeUnitOfWork();
+        var registration = new TenantAdminRegistration(tenantRepository, userRepository, uow);
 
         var result = await registration.RegisterAsync("tenant-001", "Acme Corp", "tenant-admin-001");
 
@@ -23,6 +24,7 @@ public sealed class TenantAdminRegistrationTests
         result.TenantAdmin.Type.Should().Be(UserType.TenantAdmin);
         tenantRepository.AddedTenant.Should().NotBeNull();
         userRepository.AddedUser.Should().NotBeNull();
+        uow.SaveChangesCalled.Should().BeTrue();
     }
 
     [Theory]
@@ -40,7 +42,8 @@ public sealed class TenantAdminRegistrationTests
     {
         var tenantRepository = new FakeTenantRepository();
         var userRepository = new FakeUserRepository();
-        var registration = new TenantAdminRegistration(tenantRepository, userRepository);
+        var uow = new FakeUnitOfWork();
+        var registration = new TenantAdminRegistration(tenantRepository, userRepository, uow);
 
         var act = () => registration.RegisterAsync(tenantId, tenantName, tenantAdminId);
 

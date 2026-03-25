@@ -1,4 +1,5 @@
 using IamPlatform.Domain.Authorization;
+using IamPlatform.Domain.Common;
 using IamPlatform.Domain.Identity;
 using IamPlatform.Domain.Tenants;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +9,7 @@ using ApplicationEntity = IamPlatform.Domain.Tenants.Application;
 
 namespace IamPlatform.Infrastructure.Persistence;
 
-public sealed class IamPlatformDbContext : DbContext
+public sealed class IamPlatformDbContext : DbContext, IUnitOfWork
 {
     public IamPlatformDbContext(DbContextOptions<IamPlatformDbContext> options)
         : base(options)
