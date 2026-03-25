@@ -17,16 +17,17 @@ Una aplicacion web centralizada de IAM que permita administrar identidades y aut
 Hoy la seguridad suele resolverse por aplicacion, duplicando usuarios, roles, reglas de acceso y logs. Esto genera inconsistencia, poca trazabilidad y mayor costo operativo. El producto busca centralizar estas capacidades en un solo sistema.
 
 ## Actores iniciales
-- Usuario de sistema: identidad interna del servicio; administra la plataforma global, no pertenece a ningun tenant y puede invitar otros usuarios de sistema.
-- Administrador de tenant: identidad de cliente; pertenece a un tenant, puede registrarse creando el tenant inicial, administra su configuracion con alcance total sobre su tenant y puede invitar otros administradores de tenant. No actua como usuario final sujeto a reglas de aplicacion.
-- Usuario final de tenant: identidad perteneciente a un tenant; es el sujeto principal evaluado por las reglas de acceso de las aplicaciones integradas.
-- Usuario de servicio administrativo: identidad no humana perteneciente a un tenant; administra configuracion por API de forma automatizada.
+- Usuario de sistema: identidad interna del servicio; administra la plataforma global, no pertenece a ningun tenant y puede invitar otros usuarios de sistema. Se implementa como un tipo de Usuario (`UserType.SystemUser`).
+- Administrador de tenant: identidad de cliente; pertenece a un tenant, puede registrarse creando el tenant inicial, administra su configuracion con alcance total sobre su tenant y puede invitar otros administradores de tenant. Se implementa como un tipo de Usuario (`UserType.TenantAdmin`).
+- Usuario final de tenant: identidad perteneciente a un tenant; es el sujeto principal evaluado por las reglas de acceso de las aplicaciones integradas (`UserType.EndUser`).
+- Usuario de servicio administrativo: identidad no humana perteneciente a un tenant; administra configuracion por API de forma automatizada (`UserType.ServiceAdmin`).
 - Aplicacion consumidora: delega autenticacion y consulta decisiones efectivas de acceso.
 
 ## Modelo de dominio inicial
 - Tenant: limite principal de aislamiento funcional.
-- Usuario de sistema: identidad global administrativa fuera del contexto de tenant, con alcance global sobre la plataforma.
-- Usuario de tenant: identidad autenticable perteneciente exactamente a un tenant; puede ser administrador de tenant, usuario final o usuario de servicio administrativo.
+- Usuario: identidad unica autenticable. Puede ser global (sin tenant) o pertenecer a un tenant.
+    - Usuario de sistema: identidad global administrativa fuera del contexto de tenant, con alcance global sobre la plataforma.
+    - Usuario de tenant: identidad perteneciente exactamente a un tenant; puede ser administrador de tenant, usuario final o usuario de servicio administrativo.
 - Rol: pertenece exactamente a un tenant.
 - Aplicacion: pertenece exactamente a un tenant.
 - Recurso: identificador string de un objeto de seguridad dentro de una aplicacion.
@@ -38,7 +39,7 @@ Hoy la seguridad suele resolverse por aplicacion, duplicando usuarios, roles, re
 
 ## Reglas estructurales del core
 - El sistema debe soportar multiples tenants.
-- El sistema debe soportar usuarios de sistema globales y usuarios de tenant.
+- El sistema debe soportar usuarios globales (sistema) y usuarios asociados a un tenant.
 - Debe existir un unico usuario de sistema inicial creado al bootstrap de la plataforma.
 - Un usuario de sistema no pertenece a ningun tenant.
 - Un usuario de sistema puede invitar otros usuarios de sistema.
