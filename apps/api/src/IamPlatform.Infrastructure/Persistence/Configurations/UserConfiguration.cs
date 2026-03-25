@@ -35,7 +35,7 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .HasDefaultValueSql("NOW()");
             
         // Index for tenant lookups (only for TenantUsers, where tenant_id is not null)
-        builder.HasIndex(u => u.TenantId).HasFilter("[tenant_id] IS NOT NULL");
+        builder.HasIndex(u => u.TenantId).HasFilter("\"TenantId\" IS NOT NULL");
         builder.HasIndex(u => u.Type);
     }
 }

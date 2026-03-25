@@ -74,10 +74,10 @@ namespace IamPlatform.Infrastructure.Persistence.Migrations
                     b.HasIndex("ResourceId");
 
                     b.HasIndex("RoleId")
-                        .HasFilter("[role_id] IS NOT NULL");
+                        .HasFilter("\"RoleId\" IS NOT NULL");
 
                     b.HasIndex("UserId")
-                        .HasFilter("[user_id] IS NOT NULL");
+                        .HasFilter("\"UserId\" IS NOT NULL");
 
                     b.ToTable("AuthorizationRules");
                 });
@@ -371,7 +371,7 @@ namespace IamPlatform.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("TenantId")
-                        .HasFilter("[tenant_id] IS NOT NULL");
+                        .HasFilter("\"TenantId\" IS NOT NULL");
 
                     b.HasIndex("Type");
 

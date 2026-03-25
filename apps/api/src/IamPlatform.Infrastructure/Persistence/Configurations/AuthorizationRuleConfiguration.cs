@@ -70,8 +70,8 @@ public sealed class AuthorizationRuleConfiguration : IEntityTypeConfiguration<Au
         // Indexes
         builder.HasIndex(ar => ar.ResourceId);
         builder.HasIndex(ar => ar.OperationId);
-        builder.HasIndex(ar => ar.UserId).HasFilter("[user_id] IS NOT NULL");
-        builder.HasIndex(ar => ar.RoleId).HasFilter("[role_id] IS NOT NULL");
+        builder.HasIndex(ar => ar.UserId).HasFilter("\"UserId\" IS NOT NULL");
+        builder.HasIndex(ar => ar.RoleId).HasFilter("\"RoleId\" IS NOT NULL");
         builder.HasIndex(ar => ar.IsActive);
     }
 }
