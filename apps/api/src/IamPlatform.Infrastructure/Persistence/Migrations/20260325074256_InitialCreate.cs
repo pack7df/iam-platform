@@ -252,13 +252,13 @@ namespace IamPlatform.Infrastructure.Persistence.Migrations
                 name: "IX_AuthorizationRules_RoleId",
                 table: "AuthorizationRules",
                 column: "RoleId",
-                filter: "[role_id] IS NOT NULL");
+                filter: "\"RoleId\" IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AuthorizationRules_UserId",
                 table: "AuthorizationRules",
                 column: "UserId",
-                filter: "[user_id] IS NOT NULL");
+                filter: "\"UserId\" IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Invitations_InvitedIdentityId",
@@ -324,7 +324,7 @@ namespace IamPlatform.Infrastructure.Persistence.Migrations
                 name: "IX_Users_TenantId",
                 table: "Users",
                 column: "TenantId",
-                filter: "[tenant_id] IS NOT NULL");
+                filter: "\"TenantId\" IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Type",
