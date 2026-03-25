@@ -19,6 +19,7 @@ public static class DependencyInjection
             
          // In-memory stores (will be replaced by EF repositories in later tasks)
          services.AddSingleton<InMemoryTenantStore>();
+         services.AddSingleton<InMemoryIdentityStore>();
          services.AddSingleton<IInvitationRepository, InMemoryInvitationRepository>();
          services.AddSingleton<ITenantRepository, InMemoryTenantRepository>();
          services.AddSingleton<IUserRepository, InMemoryUserRepository>();

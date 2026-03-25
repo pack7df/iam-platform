@@ -4,10 +4,10 @@ namespace IamPlatform.Domain.Tenants;
 
 public sealed class UserRoleAssignment
 {
-    private UserRoleAssignment(string id, string tenantUserId, string roleId, bool isActive)
+    private UserRoleAssignment(string id, string userId, string roleId, bool isActive)
     {
         Id = Guard.Required(id, nameof(id), "Tenant user role assignment id is required.");
-        UserId = Guard.Required(tenantUserId, nameof(tenantUserId), "Tenant user id is required.");
+        UserId = Guard.Required(userId, nameof(userId), "Tenant user id is required.");
         RoleId = Guard.Required(roleId, nameof(roleId), "Role id is required.");
         IsActive = isActive;
     }

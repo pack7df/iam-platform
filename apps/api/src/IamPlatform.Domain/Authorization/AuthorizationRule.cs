@@ -9,7 +9,7 @@ public sealed class AuthorizationRule
         string id,
         string resourceId,
         string operationId,
-        string? tenantUserId,
+        string? userId,
         string? roleId,
         AuthorizationRuleDecision decision,
         bool isActive)
@@ -17,7 +17,7 @@ public sealed class AuthorizationRule
         Id = Guard.Required(id, nameof(id), "Authorization rule id is required.");
         ResourceId = Guard.Required(resourceId, nameof(resourceId), "Resource id is required.");
         OperationId = Guard.Required(operationId, nameof(operationId), "Operation id is required.");
-        UserId = NormalizeOptional(tenantUserId);
+        UserId = NormalizeOptional(userId);
         RoleId = NormalizeOptional(roleId);
         Decision = decision;
         IsActive = isActive;
