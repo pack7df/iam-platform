@@ -143,6 +143,14 @@ public sealed class AdminPrivilegeServiceTests
             return Task.CompletedTask;
         }
 
+        public Task UpdateAsync(User user, CancellationToken cancellationToken = default) => throw new NotImplementedException();
+
+        public Task<IReadOnlyCollection<User>> GetByTenantIdAsync(string tenantId, CancellationToken cancellationToken = default)
+        {
+            var result = _users.Where(u => u.TenantId == tenantId).ToList();
+            return Task.FromResult<IReadOnlyCollection<User>>(result);
+        }
+
         public Task<bool> ExistsByTypeAsync(UserType type, CancellationToken cancellationToken = default)
         {
             return Task.FromResult(_users.Any(u => u.Type == type));
