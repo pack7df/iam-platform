@@ -2,7 +2,7 @@ using IamPlatform.Domain.Identity;
 
 namespace IamPlatform.Application.Tenants;
 
-public sealed class TenantAdminInvitation
+public sealed class TenantAdminInvitation : ITenantAdminInvitation
 {
     private readonly IInvitationRepository _invitationRepository;
 

@@ -2,7 +2,7 @@ using IamPlatform.Domain.Tenants;
 
 namespace IamPlatform.Application.Tenants;
 
-public sealed class TenantAdminRegistration
+public sealed class TenantAdminRegistration : ITenantAdminRegistration
 {
     private readonly ITenantRepository _tenantRepository;
     private readonly IUserRepository _tenantUserRepository;

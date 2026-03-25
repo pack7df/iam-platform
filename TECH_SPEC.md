@@ -232,4 +232,6 @@
 - Como se expondra el SSO para aplicaciones externas: OIDC, OAuth2 u otro protocolo?
 - El servidor estatico del frontend sera `nginx`, `caddy` u otra opcion?
 - La API seguira un estilo REST clasico con controllers o una variante mas vertical por feature?
+  - Si es vertical por feature, como se mapearan los endpoints a los servicios de aplicacion (ej: en Program.cs, clases estáticas, controladores ligeros)?
+  - Se debe establecer una convención clara de que los endpoints solo delegan a servicios de aplicación y no contienen lógica de negocio.
 - Como se resolvera la gestion de secretos y configuracion por ambiente?
