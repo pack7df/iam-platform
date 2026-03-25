@@ -406,6 +406,8 @@ Construir y validar el corazon del producto: recursos, operaciones, reglas y dec
 - `denegado` gana siempre sobre `permitido`.
 - La decision efectiva puede probarse automaticamente sobre escenarios reales del dominio.
 
+**Estado:** ✅ **Completada y probada** (ver `docs/ETAPA_2_COMPLETADA.md`)
+
 ## Etapa 3 - Persistencia y APIs administrativas del core
 ### Objetivo
 Conectar el modelo a PostgreSQL y exponer APIs suficientes para administrar el core desde fuera.
