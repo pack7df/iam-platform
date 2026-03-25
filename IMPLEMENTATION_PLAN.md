@@ -440,6 +440,278 @@ Conectar el modelo a PostgreSQL y exponer APIs suficientes para administrar el c
 - La evaluacion efectiva funciona con datos persistidos.
 - La auditoria registra cambios administrativos principales.
 
+### Desglose en tareas revisables (recomendado)
+
+#### Tarea 3.1 - Diseñar esquema de base de datos inicial
+- Objetivo: Definir tablas, relaciones y constraints para el core completo.
+- Alcance:
+  - Diseñar tablas: `tenants`, `users`, `roles`, `applications`, `resources`, `operations`, `authorization_rules`, `user_role_assignments`, `invitations`
+  - Definir claves foráneas, índices y constraints
+  - Documentar el esquema (diagrama o archivo de migración base)
+- Entregables:
+  - Archivo con esquema SQL o documento de diseño
+  - Justificación de decisiones (ej: por qué Resource tiene ParentId, cómo se modela herencia)
+- Criterio de revisión:
+  - Todas las entidades del dominio tienen una tabla correspondiente
+  - Relaciones 1:N y N:N están claras
+  - Integridad referencial asegurada
+- Branch sugerida: `docs/task-3.1-database-schema-design`
+- PR title sugerido: `[task-3.1] docs: design initial database schema`
+
+#### Tarea 3.2 - Crear DbContext y configuraciones EF Core iniciales
+- Objetivo: Establecer el contexto de base de datos con DbSets y configuraciones básicas.
+- Alcance:
+  - Crear `IamPlatformDbContext` que herede de `DbContext`
+  - Definir DbSets para todas las entidades
+  - Configurar property mappings (columnas, tipos, constraints)
+  - Configurar relaciones entre entidades (Fluent API)
+- Entregables:
+  - `IamPlatformDbContext.cs`
+  - Configuraciones de entidades (en carpetas `Configurations/` o en `OnModelCreating`)
+  - Asegurar que el contexto compile sin errores
+- Criterio de revisión:
+  - Todas las entidades están mapeadas
+  - Relaciones configuradas correctamente
+  - No hay configuraciones contradictorias
+- Branch sugerida: `feat/task-3.2-dbcontext-initial`
+- PR title sugerido: `[task-3.2] feat: add initial DbContext and entity configurations`
+- **Precondición**: Tarea 3.1 completada
+
+#### Tarea 3.3 - Crear primera migración de EF Core
+- Objetivo: Generar migración inicial que refleje el esquema completo.
+- Alcance:
+  - Asegurar `DbContext` funcional
+  - Ejecutar `dotnet ef migrations add InitialCreate`
+  - Revisar y ajustar migración si es necesario
+  - Agregar migración al repositorio
+- Entregables:
+  - Migración generada en `Migrations/` folder
+  - Archivo `IamPlatformDbContextModelSnapshot` actualizado
+- Criterio de revisión:
+  - Migración refleja todas las tablas y constraints
+  - Migración puede aplicarse a una base vacía
+- Branch sugerida: `feat/task-3.3-initial-migration`
+- PR title sugerido: `[task-3.3] feat: add initial EF Core migration`
+- **Precondición**: Tarea 3.2 completada
+
+#### Tarea 3.4 - Implementar `ResourceRepository` con EF Core
+- Objetivo: Convertir el repositorio in-memory a persistencia real.
+- Alcance:
+  - Crear `ResourceRepository` que implemente `IResourceRepository`
+  - Usar `IamPlatformDbContext` para operaciones CRUD
+  - Implementar método `GetByIdAsync` y cualquier otro específico
+  - Asegurar queries eficientes (incluir navegaciones si es necesario)
+- Entregables:
+  - `ResourceRepository.cs` en Infrastructure
+  - Tests de integración que usen PostgreSQL real (con Testcontainers)
+- Criterio de revisión:
+  - CRUD básico funciona
+  - Relaciones se cargan correctamente
+  - Tests de integración pasan
+- Branch sugerida: `feat/task-3.4-resource-repository`
+- PR title sugerido: `[task-3.4] feat: implement ResourceRepository with EF Core`
+- **Precondición**: Tarea 3.3 completada
+
+#### Tarea 3.5 - Implementar `AuthorizationRuleRepository` con EF Core
+- Objetivo: Repositorio para reglas de autorización.
+- Alcance:
+  - Crear `AuthorizationRuleRepository` que implemente `IAuthorizationRuleRepository`
+  - Implementar método clave `GetApplicableRulesAsync(userId, resourceId, operationId)` con query eficiente
+  - Considerar filtrado por `IsActive` y `TenantId`
+- Entregables:
+  - `AuthorizationRuleRepository.cs`
+  - Tests de integración específicos para este repositorio
+- Criterio de revisión:
+  - Query devuelve solo reglas aplicables (activas, mismo tenant, recurso/operación)
+  - Performance aceptable
+- Branch sugerida: `feat/task-3.5-authorizationrule-repository`
+- PR title sugerido: `[task-3.5] feat: implement AuthorizationRuleRepository`
+- **Precondición**: Tarea 3.4 completada
+
+#### Tarea 3.6 - Implementar `UserRoleAssignmentRepository` con EF Core
+- Objetivo: Repositorio para asignaciones usuario-rol.
+- Alcance:
+  - Crear `UserRoleAssignmentRepository` que implemente `IUserRoleAssignmentRepository`
+  - Implementar métodos: `GetUserRolesAsync(userId)`, `AssignAsync`, `RemoveAsync`
+- Entregables:
+  - `UserRoleAssignmentRepository.cs`
+  - Tests de integración
+- Criterio de revisión:
+  - Puede obtener todos los roles de un usuario
+  - Asignación y remoción funcionan
+- Branch sugerida: `feat/task-3.6-userroleassignment-repository`
+- PR title sugerido: `[task-3.6] feat: implement UserRoleAssignmentRepository`
+- **Precondición**: Tarea 3.5 completada
+
+#### Tarea 3.7 - Implementar repositorios restantes (opcional si faltan)
+- Objetivo: Asegurar que todos los repositorios del dominio tengan implementación EF Core.
+- Alcance:
+  - `IUserRepository` → `UserRepository`
+  - `IRoleRepository` (si existe)
+  - `IApplicationRepository` (si existe)
+  - `ITenantRepository` (ya puede existir, verificar)
+- Entregables:
+  - Repositorios faltantes
+  - Tests de integración
+- Criterio de revisión:
+  - Todos los I*Repository del dominio tienen implementación EF Core
+- Branch sugerida: `feat/task-3.7-remaining-repositories`
+- PR title sugerido: `[task-3.7] feat: complete remaining EF Core repositories`
+- **Precondición**: Tarea 3.6 completada
+
+#### Tarea 3.8 - Actualizar Infrastructure DI para PostgreSQL
+- Objetivo: Configurar la inyección de dependencias para usar PostgreSQL en producción.
+- Alcance:
+  - Modificar `Infrastructure/DependencyInjection.cs` para registrar `IamPlatformDbContext` con Npgsql
+  - Configurar connection string desde `IConfiguration`
+  - registrar repositorios EF Core (Scoped)
+  - Desregistrar o condicionar repositorios in-memory (solo para tests)
+- Entregables:
+  - Método `AddInfrastructure` actualizado
+  - Archivo de configuración de connection strings (ej: `appsettings.json` o variables de entorno)
+- Criterio de revisión:
+  - `DbContext` se resuelve correctamente
+  - Repositorios EF Core están registrados
+  - Tests unitarios pueden mockear repositorios (las interfaces no cambian)
+- Branch sugerida: `feat/task-3.8-infrastructure-di`
+- PR title sugerido: `[task-3.8] feat: update Infrastructure DI for PostgreSQL`
+- **Precondición**: Tarea 3.7 completada
+
+#### Tarea 3.9 - Endpoints CRUD para Recursos
+- Objetivo: Exponer API HTTP para gestionar recursos (Resource).
+- Alcance:
+  - `POST /resources` - crear recurso (root o child con parentId)
+  - `GET /resources/{id}` - obtener recurso
+  - `PUT /resources/{id}` - actualizar (rename, changeKey, activate/deactivate)
+  - `GET /resources` - listar (filtrado por applicationId, padre/hijos?)
+  - `DELETE /resources/{id}` (o soft-delete via `Deactivate`)
+- Entregables:
+  - Endpoints en `Program.cs`
+  - DTOs de request/response si son necesarios
+  - Tests de integración API
+- Criterio de revisión:
+  - CRUD completo funciona
+  - Validaciones aplican (ej: no crear ciclos)
+  - Respuestas HTTP apropiadas (201, 200, 404, etc.)
+- Branch sugerida: `feat/task-3.9-resources-crud-endpoints`
+- PR title sugerido: `[task-3.9] feat: add CRUD endpoints for resources`
+- **Precondición**: Tarea 3.8 completada
+
+#### Tarea 3.10 - Endpoints CRUD para Operaciones
+- Objetivo: API para gestionar operaciones (Operation).
+- Alcance:
+  - `POST /operations` - crear operación
+  - `GET /operations/{id}`
+  - `PUT /operations/{id}` - rename, changeKey, activate/deactivate
+  - `GET /operations` - listar por applicationId
+- Entregables:
+  - Endpoints en `Program.cs`
+  - Tests de integración
+- Criterio de revisión:
+  - Operaciones pueden crearse y gestionarse
+  - Relación con Application validada
+- Branch sugerida: `feat/task-3.10-operations-crud-endpoints`
+- PR title sugerido: `[task-3.10] feat: add CRUD endpoints for operations`
+- **Precondición**: Tarea 3.9 completada
+
+#### Tarea 3.11 - Endpoints CRUD para Reglas de Autorización
+- Objetivo: API para gestionar AuthorizationRule.
+- Alcance:
+  - `POST /authorization/rules` - crear regla (for user, for role, for both)
+  - `GET /authorization/rules/{id}`
+  - `PUT /authorization/rules/{id}` - changeDecision, activate/deactivate
+  - `GET /authorization/rules` - listar (filtrado por resourceId, userId, roleId, tenantId)
+  - `DELETE /authorization/rules/{id}` (o deactivate)
+- Entregables:
+  - Endpoints en `Program.cs`
+  - DTOs que cubran los tres casos de creación
+  - Tests de integración
+- Criterio de revisión:
+  - Reglas pueden crearse con cualquiera de los tres objetivos
+  - Validaciones funcionan (misma app recurso/operación, mismo tenant usuario/rol)
+- Branch sugerida: `feat/task-3.11-authorization-rules-crud`
+- PR title sugerido: `[task-3.11] feat: add CRUD endpoints for authorization rules`
+- **Precondición**: Tarea 3.10 completada
+
+#### Tarea 3.12 - Endpoints CRUD para Asignación de Roles (UserRoleAssignment)
+- Objetivo: API para asignar/remover roles a usuarios.
+- Alcance:
+  - `POST /users/{userId}/roles` - asignar rol
+  - `DELETE /users/{userId}/roles/{roleId}` - remover rol
+  - `GET /users/{userId}/roles` - listar roles del usuario
+  - Validar que usuario y rol pertenecen al mismo tenant
+- Entregables:
+  - Endpoints en `Program.cs`
+  - Tests de integración
+- Criterio de revisión:
+  - Asignación y remoción funcionan
+  - Error sitenant no coincide
+- Branch sugerida: `feat/task-3.12-userroleassignment-crud`
+- PR title sugerido: `[task-3.12] feat: add endpoints for user role assignments`
+- **Precondición**: Tarea 3.11 completada
+
+#### Tarea 3.13 - Endpoint de Evaluación de Autorización (público)
+- Objetivo: Exponer endpoint para que aplicaciones consulten decisión efectiva.
+- Alcance:
+  - `POST /authorization/evaluate` o `GET /authorization/evaluate?userId=...&resourceId=...&operationId=...`
+  - Recibir: `userId`, `resourceId`, `operationId`
+  - Usar `IAuthorizationService` para evaluar
+  - Devolver: `{ "decision": "Allow"|"Deny", "appliedRules": [...] }`
+  - Considerar autenticación (aún simple, quizás solo userId o token dummy)
+- Entregables:
+  - Endpoint en `Program.cs`
+  - Tests de integración
+- Criterio de revisión:
+  - Evaluación funciona con datos persistidos
+  - Resultado coincide con motor de dominio
+- Branch sugerida: `feat/task-3.13-authorization-evaluate-endpoint`
+- PR title sugerido: `[task-3.13] feat: add authorization evaluation endpoint`
+- **Precondición**: Tarea 3.12 completada
+
+#### Tarea 3.14 - Tests de Integración generales del Core persistido
+- Objetivo: Verificar que todos los endpoints CRUD + evaluación funcionan contra PostgreSQL real.
+- Alcance:
+  - Crear Testcontainers con PostgreSQL
+  - Escribir tests que:
+    - Creen Tenant, User, Role, Application
+    - Creen Resource hierarchy (padre → hijo)
+    - Creen Operations
+    - Creen AuthorizationRules (user, role, both)
+    - Asignen roles a usuarios
+    - Evalúen decisiones efectivas
+    - Verifiquen herencia, deny precedence, default deny
+- Entregables:
+  - Archivos de integración en `IamPlatform.IntegrationTests`
+  - CI/CD configurado para correr estos tests (si aplica)
+- Criterio de revisión:
+  - 100% de los escenarios de Etapa 2 también funcionan con datos persistidos
+  - Base de datos se crea y migra automáticamente en tests
+- Branch sugerida: `feat/task-3.14-core-integration-tests`
+- PR title sugerido: `[task-3.14] feat: add integration tests for persisted core`
+- **Precondición**: Tarea 3.13 completada
+
+#### Tarea 3.15 - Implementar auditoría básica de cambios administrativos
+- Objetivo: Registrar cambios importantes en tablas de auditoría.
+- Alcance:
+  - Diseñar tabla `audit_logs` (actor, tipo_actor, tenant_id, accion, objetivo, resultado, timestamp, detalles_jsonb)
+  - Implementar EF Core entity `AuditLog`
+  - Usar EF Core interceptors o middleware para capturar:
+    - Creación/edición/eliminación de entidades principales
+    - Evaluaciones de autorización (opcional por ahora)
+  - Exponer endpoint para consultar logs (ReadOnly)
+- Entregables:
+  - Entidad AuditLog + migración
+  - Interceptor o middleware de auditoría
+  - Endpoint `GET /audit-logs`
+- Criterio de revisión:
+  - Cambios en entidades core quedan registrados
+  - Logs incluyen quién hizo qué y cuándo
+- Branch sugerida: `feat/task-3.15-audit-logging`
+- PR title sugerido: `[task-3.15] feat: implement basic audit logging`
+- **Precondición**: Tarea 3.14 completada
+
+---
+
 ## Etapa 4 - Frontend administrativo minimo
 ### Objetivo
 Proveer una UI suficiente para operar el sistema y verificar manualmente que el core funciona.
