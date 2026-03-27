@@ -1,3 +1,4 @@
+using IamPlatform.Application.Authorization.Resources;
 using IamPlatform.Application.Identity;
 using IamPlatform.Application.Tenants;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +13,13 @@ public static class DependencyInjection
         services.AddScoped<ISystemUserInvitation, SystemUserInvitation>();
         services.AddScoped<ITenantAdminRegistration, TenantAdminRegistration>();
         services.AddScoped<ITenantAdminInvitation, TenantAdminInvitation>();
+
+        // Resource Management
+        services.AddScoped<ICreateResourceHandler, CreateResourceHandler>();
+        services.AddScoped<IUpdateResourceHandler, UpdateResourceHandler>();
+        services.AddScoped<IDeleteResourceHandler, DeleteResourceHandler>();
+        services.AddScoped<IGetResourceHandler, GetResourceHandler>();
+        services.AddScoped<IListResourcesHandler, ListResourcesHandler>();
 
         return services;
     }

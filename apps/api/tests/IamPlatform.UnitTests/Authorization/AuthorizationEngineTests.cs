@@ -441,6 +441,16 @@ public sealed class AuthorizationEngineTests
             }
             return Task.CompletedTask;
         }
+
+        public Task RemoveAsync(Resource resource, CancellationToken cancellationToken = default)
+        {
+            var existing = _resources.FirstOrDefault(r => r.Id == resource.Id);
+            if (existing != null)
+            {
+                _resources.Remove(existing);
+            }
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FakeAuthorizationRuleRepository : IAuthorizationRuleRepository
