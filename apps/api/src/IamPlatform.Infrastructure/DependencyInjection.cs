@@ -21,12 +21,12 @@ public static class DependencyInjection
             
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<IamPlatformDbContext>());
             
-         // In-memory stores (will be replaced by EF repositories in later tasks)
          // Repositories (EF Core)
          services.AddScoped<IResourceRepository, ResourceRepository>();
          services.AddScoped<IInvitationRepository, InvitationRepository>();
          services.AddScoped<ITenantRepository, TenantRepository>();
          services.AddScoped<IUserRepository, UserRepository>();
+         services.AddScoped<IAuthorizationRuleRepository, AuthorizationRuleRepository>();
 
         return services;
     }

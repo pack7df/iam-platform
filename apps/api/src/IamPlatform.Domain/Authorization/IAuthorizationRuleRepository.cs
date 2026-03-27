@@ -10,4 +10,7 @@ public interface IAuthorizationRuleRepository
         string resourceId,
         string operationId,
         CancellationToken cancellationToken = default);
+
+    Task AddAsync(AuthorizationRule rule, CancellationToken cancellationToken = default);
+    Task UpdateAsync(AuthorizationRule rule, CancellationToken cancellationToken = default);
 }

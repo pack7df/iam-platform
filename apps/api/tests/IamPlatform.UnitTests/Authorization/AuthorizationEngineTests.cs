@@ -480,6 +480,23 @@ public sealed class AuthorizationEngineTests
                 )).ToList();
             return result;
         }
+
+        public Task AddAsync(AuthorizationRule rule, CancellationToken cancellationToken = default)
+        {
+            _rules.Add(rule);
+            return Task.CompletedTask;
+        }
+
+        public Task UpdateAsync(AuthorizationRule rule, CancellationToken cancellationToken = default)
+        {
+            var existing = _rules.FirstOrDefault(r => r.Id == rule.Id);
+            if (existing != null)
+            {
+                _rules.Remove(existing);
+                _rules.Add(rule);
+            }
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FakeUserRoleAssignmentRepository : IUserRoleAssignmentRepository
