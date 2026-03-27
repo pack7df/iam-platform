@@ -2,15 +2,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using IamPlatform.Domain.Authorization;
 using IamPlatform.Domain.Common;
+using MediatR;
 
 namespace IamPlatform.Application.Authorization.Resources;
 
-public interface IDeleteResourceHandler
-{
-    Task HandleAsync(string id, CancellationToken cancellationToken = default);
-}
+public sealed record DeleteResourceCommand(string Id) : IRequest;
 
-public sealed class DeleteResourceHandler : IDeleteResourceHandler
+public sealed class DeleteResourceHandler : IRequestHandler<DeleteResourceCommand>
 {
     private readonly IResourceRepository _repository;
     private readonly IUnitOfWork _unitOfWork;
@@ -21,9 +19,9 @@ public sealed class DeleteResourceHandler : IDeleteResourceHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task HandleAsync(string id, CancellationToken cancellationToken = default)
+    public async Task Handle(DeleteResourceCommand request, CancellationToken cancellationToken)
     {
-        var resource = await _repository.GetByIdAsync(id, cancellationToken);
+        var resource = await _repository.GetByIdAsync(request.Id, cancellationToken);
         if (resource == null)
         {
             return;

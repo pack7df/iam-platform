@@ -2,22 +2,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using IamPlatform.Domain.Authorization;
+using MediatR;
 
 namespace IamPlatform.Application.Authorization.Resources;
 
-public sealed record ResourceResponse(
-    string Id,
-    string Name,
-    string? ParentId,
-    string ApplicationId,
-    bool IsActive);
+public sealed record GetResourceQuery(string Id) : IRequest<ResourceResponse?>;
 
-public interface IGetResourceHandler
-{
-    Task<ResourceResponse?> HandleAsync(string id, CancellationToken cancellationToken = default);
-}
-
-public sealed class GetResourceHandler : IGetResourceHandler
+public sealed class GetResourceHandler : IRequestHandler<GetResourceQuery, ResourceResponse?>
 {
     private readonly IResourceRepository _repository;
 
@@ -26,9 +17,9 @@ public sealed class GetResourceHandler : IGetResourceHandler
         _repository = repository;
     }
 
-    public async Task<ResourceResponse?> HandleAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<ResourceResponse?> Handle(GetResourceQuery request, CancellationToken cancellationToken)
     {
-        var resource = await _repository.GetByIdAsync(id, cancellationToken);
+        var resource = await _repository.GetByIdAsync(request.Id, cancellationToken);
         if (resource == null)
         {
             return null;

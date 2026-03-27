@@ -8,20 +8,21 @@ namespace IamPlatform.UnitTests.Tenants;
 public sealed class TenantAdminRegistrationTests
 {
     [Fact]
-    public async Task RegisterAsync_Should_Create_Tenant_And_TenantAdmin()
+    public async Task Handle_Should_Create_Tenant_And_TenantAdmin()
     {
         var tenantRepository = new FakeTenantRepository();
         var userRepository = new FakeUserRepository();
         var uow = new FakeUnitOfWork();
-        var registration = new TenantAdminRegistration(tenantRepository, userRepository, uow);
+        var handler = new RegisterTenantAdminHandler(tenantRepository, userRepository, uow);
+        var command = new RegisterTenantAdminCommand("tenant-001", "Acme Corp", "tenant-admin-001");
 
-        var result = await registration.RegisterAsync("tenant-001", "Acme Corp", "tenant-admin-001");
+        var result = await handler.Handle(command, CancellationToken.None);
 
         result.Tenant.Id.Should().Be("tenant-001");
         result.Tenant.Name.Should().Be("Acme Corp");
-        result.TenantAdmin.Id.Should().Be("tenant-admin-001");
-        result.TenantAdmin.TenantId.Should().Be("tenant-001");
-        result.TenantAdmin.Type.Should().Be(UserType.TenantAdmin);
+        result.Admin.Id.Should().Be("tenant-admin-001");
+        result.Admin.TenantId.Should().Be("tenant-001");
+        result.Admin.Type.Should().Be(UserType.TenantAdmin);
         tenantRepository.AddedTenant.Should().NotBeNull();
         userRepository.AddedUser.Should().NotBeNull();
         uow.SaveChangesCalled.Should().BeTrue();
@@ -34,7 +35,7 @@ public sealed class TenantAdminRegistrationTests
     [InlineData("tenant-001", " ", "tenant-admin-001", "Tenant name is required.*")]
     [InlineData("tenant-001", "Acme Corp", "", "User id is required.*")]
     [InlineData("tenant-001", "Acme Corp", " ", "User id is required.*")]
-    public async Task RegisterAsync_Should_Reject_Invalid_Input(
+    public async Task Handle_Should_Reject_Invalid_Input(
         string tenantId,
         string tenantName,
         string tenantAdminId,
@@ -43,9 +44,10 @@ public sealed class TenantAdminRegistrationTests
         var tenantRepository = new FakeTenantRepository();
         var userRepository = new FakeUserRepository();
         var uow = new FakeUnitOfWork();
-        var registration = new TenantAdminRegistration(tenantRepository, userRepository, uow);
+        var handler = new RegisterTenantAdminHandler(tenantRepository, userRepository, uow);
+        var command = new RegisterTenantAdminCommand(tenantId, tenantName, tenantAdminId);
 
-        var act = () => registration.RegisterAsync(tenantId, tenantName, tenantAdminId);
+        var act = () => handler.Handle(command, CancellationToken.None);
 
         await act.Should().ThrowAsync<ArgumentException>()
             .WithMessage(expectedMessage);

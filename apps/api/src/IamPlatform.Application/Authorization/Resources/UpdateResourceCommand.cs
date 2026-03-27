@@ -3,21 +3,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using IamPlatform.Domain.Authorization;
 using IamPlatform.Domain.Common;
+using MediatR;
 
 namespace IamPlatform.Application.Authorization.Resources;
 
-public sealed class UpdateResourceCommand
-{
-    public string Id { get; init; } = string.Empty;
-    public string Name { get; init; } = string.Empty;
-}
+public sealed record UpdateResourceCommand(
+    string Id,
+    string Name) : IRequest;
 
-public interface IUpdateResourceHandler
-{
-    Task HandleAsync(UpdateResourceCommand command, CancellationToken cancellationToken = default);
-}
-
-public sealed class UpdateResourceHandler : IUpdateResourceHandler
+public sealed class UpdateResourceHandler : IRequestHandler<UpdateResourceCommand>
 {
     private readonly IResourceRepository _repository;
     private readonly IUnitOfWork _unitOfWork;
@@ -28,15 +22,15 @@ public sealed class UpdateResourceHandler : IUpdateResourceHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task HandleAsync(UpdateResourceCommand command, CancellationToken cancellationToken = default)
+    public async Task Handle(UpdateResourceCommand request, CancellationToken cancellationToken)
     {
-        var resource = await _repository.GetByIdAsync(command.Id, cancellationToken);
+        var resource = await _repository.GetByIdAsync(request.Id, cancellationToken);
         if (resource == null)
         {
-            throw new InvalidOperationException($"Resource with ID {command.Id} not found.");
+            throw new InvalidOperationException($"Resource with ID {request.Id} not found.");
         }
 
-        resource.Rename(command.Name);
+        resource.Rename(request.Name);
         await _repository.UpdateAsync(resource, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }

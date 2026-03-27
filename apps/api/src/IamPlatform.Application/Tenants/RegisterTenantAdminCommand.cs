@@ -1,15 +1,20 @@
 using IamPlatform.Domain.Common;
 using IamPlatform.Domain.Tenants;
+using MediatR;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace IamPlatform.Application.Tenants;
 
-public sealed class TenantAdminRegistration : ITenantAdminRegistration
+public sealed record RegisterTenantAdminCommand(string TenantId, string TenantName, string TenantAdminId) : IRequest<TenantAdminRegistrationResult>;
+
+public sealed class RegisterTenantAdminHandler : IRequestHandler<RegisterTenantAdminCommand, TenantAdminRegistrationResult>
 {
     private readonly ITenantRepository _tenantRepository;
     private readonly IUserRepository _tenantUserRepository;
     private readonly IUnitOfWork _uow;
 
-    public TenantAdminRegistration(
+    public RegisterTenantAdminHandler(
         ITenantRepository tenantRepository,
         IUserRepository tenantUserRepository,
         IUnitOfWork uow)
@@ -19,14 +24,10 @@ public sealed class TenantAdminRegistration : ITenantAdminRegistration
         _uow = uow;
     }
 
-    public async Task<TenantAdminRegistrationResult> RegisterAsync(
-        string tenantId,
-        string tenantName,
-        string tenantAdminId,
-        CancellationToken cancellationToken = default)
+    public async Task<TenantAdminRegistrationResult> Handle(RegisterTenantAdminCommand request, CancellationToken cancellationToken)
     {
-        var tenant = Tenant.Create(tenantId, tenantName);
-        var tenantAdmin = User.Create(tenantAdminId, tenant.Id, UserType.TenantAdmin);
+        var tenant = Tenant.Create(request.TenantId, request.TenantName);
+        var tenantAdmin = User.Create(request.TenantAdminId, tenant.Id, UserType.TenantAdmin);
 
         await _tenantRepository.AddAsync(tenant, cancellationToken);
         await _tenantUserRepository.AddAsync(tenantAdmin, cancellationToken);

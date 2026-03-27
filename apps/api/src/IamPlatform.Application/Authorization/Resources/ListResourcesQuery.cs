@@ -3,15 +3,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using IamPlatform.Domain.Authorization;
+using MediatR;
 
 namespace IamPlatform.Application.Authorization.Resources;
 
-public interface IListResourcesHandler
-{
-    Task<IReadOnlyCollection<ResourceResponse>> HandleAsync(string applicationId, CancellationToken cancellationToken = default);
-}
+public sealed record ListResourcesQuery(string ApplicationId) : IRequest<IReadOnlyCollection<ResourceResponse>>;
 
-public sealed class ListResourcesHandler : IListResourcesHandler
+public sealed class ListResourcesHandler : IRequestHandler<ListResourcesQuery, IReadOnlyCollection<ResourceResponse>>
 {
     private readonly IResourceRepository _repository;
 
@@ -20,9 +18,9 @@ public sealed class ListResourcesHandler : IListResourcesHandler
         _repository = repository;
     }
 
-    public async Task<IReadOnlyCollection<ResourceResponse>> HandleAsync(string applicationId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyCollection<ResourceResponse>> Handle(ListResourcesQuery request, CancellationToken cancellationToken)
     {
-        var resources = await _repository.GetAllForApplicationAsync(applicationId, cancellationToken);
+        var resources = await _repository.GetAllForApplicationAsync(request.ApplicationId, cancellationToken);
         
         return resources.Select(r => new ResourceResponse(
             r.Id,

@@ -43,7 +43,7 @@ public sealed class IdentityEndpointsTests
         await using var factory = new ApiWebApplicationFactory();
         using var client = factory.CreateClient();
 
-        var response = await client.PostAsJsonAsync("/tenants/registration", new
+        var response = await client.PostAsJsonAsync("/tenants", new
         {
             tenantId = Guid.NewGuid().ToString(),
             tenantName = "Acme Corp",
@@ -77,7 +77,7 @@ public sealed class IdentityEndpointsTests
         var tenantId = Guid.NewGuid().ToString();
 
         // Ensure tenant exists due to foreign key constraint
-        await client.PostAsJsonAsync("/tenants/registration", new
+        await client.PostAsJsonAsync("/tenants", new
         {
             tenantId = tenantId,
             tenantName = "Test Tenant",
