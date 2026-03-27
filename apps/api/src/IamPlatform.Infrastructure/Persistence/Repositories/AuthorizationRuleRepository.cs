@@ -17,6 +17,18 @@ public sealed class AuthorizationRuleRepository : IAuthorizationRuleRepository
         _userRoleAssignmentRepository = userRoleAssignmentRepository;
     }
 
+    public async Task<AuthorizationRule?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
+    {
+        return await _context.AuthorizationRules
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+    }
+
+    public async Task<IReadOnlyCollection<AuthorizationRule>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.AuthorizationRules
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyCollection<AuthorizationRule>> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
     {
         return await _context.AuthorizationRules
@@ -55,6 +67,12 @@ public sealed class AuthorizationRuleRepository : IAuthorizationRuleRepository
     public Task UpdateAsync(AuthorizationRule rule, CancellationToken cancellationToken = default)
     {
         _context.AuthorizationRules.Update(rule);
+        return Task.CompletedTask;
+    }
+
+    public Task RemoveAsync(AuthorizationRule rule, CancellationToken cancellationToken = default)
+    {
+        _context.AuthorizationRules.Remove(rule);
         return Task.CompletedTask;
     }
 }

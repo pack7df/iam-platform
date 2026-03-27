@@ -1,0 +1,148 @@
+using System.Net;
+using System.Net.Http.Json;
+using FluentAssertions;
+using IamPlatform.Application.Authorization.Rules;
+using IamPlatform.Domain.Authorization;
+using IamPlatform.Domain.Tenants;
+using IamPlatform.Infrastructure.Persistence;
+using Microsoft.Extensions.DependencyInjection;
+using Xunit;
+using DomainApp = IamPlatform.Domain.Tenants.Application;
+
+namespace IamPlatform.IntegrationTests;
+
+public sealed class AuthorizationEndpointsTests
+{
+    private async Task<(string ResourceId, string OperationId, string UserId, string RoleId)> SeedDependencies(ApiWebApplicationFactory factory)
+    {
+        using var scope = factory.Services.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<IamPlatformDbContext>();
+
+        var tenantId = Guid.NewGuid().ToString();
+        var appId = Guid.NewGuid().ToString();
+        var resId = Guid.NewGuid().ToString();
+        var opId = Guid.NewGuid().ToString();
+        var userId = Guid.NewGuid().ToString();
+        var roleId = Guid.NewGuid().ToString();
+
+        var tenant = Tenant.Create(tenantId, "Test Tenant Auth");
+        var app = DomainApp.Create(appId, tenantId, "Test App Auth");
+        var resource = IamPlatform.Domain.Authorization.Resource.CreateRoot(resId, appId, "test-res", "test-res-key");
+        var operation = IamPlatform.Domain.Authorization.Operation.Create(opId, appId, "test-op", "Test Operation");
+        var user = User.Create(userId, tenantId, UserType.EndUser);
+        var role = Role.Create(roleId, tenantId, "Test Role");
+
+        context.Tenants.Add(tenant);
+        context.Applications.Add(app);
+        context.Resources.Add(resource);
+        context.Operations.Add(operation);
+        context.Users.Add(user);
+        context.Roles.Add(role);
+        await context.SaveChangesAsync();
+
+        return (resId, opId, userId, roleId);
+    }
+
+    [Fact]
+    public async Task PostRule_Should_Return_Created()
+    {
+        await using var factory = new ApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var (resId, opId, userId, _) = await SeedDependencies(factory);
+
+        var command = new CreateAuthorizationRuleCommand(
+            Guid.NewGuid().ToString(),
+            userId,
+            null,
+            resId,
+            opId,
+            "Allow");
+
+        var response = await client.PostAsJsonAsync("/api/authorization/rules", command);
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+    }
+
+    [Fact]
+    public async Task GetRule_Should_Return_Ok_When_Exists()
+    {
+        await using var factory = new ApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var (resId, opId, _, roleId) = await SeedDependencies(factory);
+
+        var id = Guid.NewGuid().ToString();
+        var command = new CreateAuthorizationRuleCommand(id, null, roleId, resId, opId, "Allow");
+        await client.PostAsJsonAsync("/api/authorization/rules", command);
+        
+        var response = await client.GetAsync($"/api/authorization/rules/{id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<AuthorizationRuleResponse>();
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(id);
+    }
+
+    [Fact]
+    public async Task ListRules_Should_Return_List()
+    {
+        await using var factory = new ApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var (resId, opId, userId, _) = await SeedDependencies(factory);
+
+        var command1 = new CreateAuthorizationRuleCommand(Guid.NewGuid().ToString(), userId, null, resId, opId, "Allow");
+        var command2 = new CreateAuthorizationRuleCommand(Guid.NewGuid().ToString(), userId, null, resId, opId, "Deny");
+
+        await client.PostAsJsonAsync("/api/authorization/rules", command1);
+        await client.PostAsJsonAsync("/api/authorization/rules", command2);
+        
+        var response = await client.GetAsync($"/api/authorization/rules?resourceId={resId}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await response.Content.ReadFromJsonAsync<List<AuthorizationRuleResponse>>();
+        result.Should().NotBeNull();
+        result!.Count.Should().BeGreaterThanOrEqualTo(2);
+    }
+
+    [Fact]
+    public async Task PutRule_Should_Return_NoContent()
+    {
+        await using var factory = new ApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var (resId, opId, userId, _) = await SeedDependencies(factory);
+
+        var id = Guid.NewGuid().ToString();
+        var command = new CreateAuthorizationRuleCommand(id, userId, null, resId, opId, "Allow");
+        await client.PostAsJsonAsync("/api/authorization/rules", command);
+
+        var updateCommand = new UpdateAuthorizationRuleCommand(id, "Deny", false);
+        var response = await client.PutAsJsonAsync($"/api/authorization/rules/{id}", updateCommand);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        
+        // Verify update
+        var getResponse = await client.GetAsync($"/api/authorization/rules/{id}");
+        var result = await getResponse.Content.ReadFromJsonAsync<AuthorizationRuleResponse>();
+        result!.Decision.Should().Be("Deny");
+        result!.IsActive.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task DeleteRule_Should_Return_NoContent()
+    {
+        await using var factory = new ApiWebApplicationFactory();
+        using var client = factory.CreateClient();
+        var (resId, opId, userId, _) = await SeedDependencies(factory);
+
+        var id = Guid.NewGuid().ToString();
+        var command = new CreateAuthorizationRuleCommand(id, userId, null, resId, opId, "Allow");
+        await client.PostAsJsonAsync("/api/authorization/rules", command);
+
+        var response = await client.DeleteAsync($"/api/authorization/rules/{id}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        
+        // Verify deletion
+        var getResponse = await client.GetAsync($"/api/authorization/rules/{id}");
+        getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+}

@@ -18,8 +18,9 @@ app.MapHealthChecks("/health");
 app.MapBootstrapEndpoints();
 app.MapTenantEndpoints();
 app.MapInvitationEndpoints();
-app.MapResourceEndpoints();
 app.MapOperationEndpoints();
+app.MapAuthorizationEndpoints();
+app.MapResourceEndpoints();
 
 app.Run();
 

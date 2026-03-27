@@ -239,6 +239,17 @@ public sealed class AuthorizationServiceTests
             _userRoleAssignmentRepository = userRoleAssignmentRepository;
         }
 
+        public Task<AuthorizationRule?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
+        {
+            var result = _rules.FirstOrDefault(r => r.Id == id);
+            return Task.FromResult<AuthorizationRule?>(result);
+        }
+
+        public Task<IReadOnlyCollection<AuthorizationRule>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyCollection<AuthorizationRule>>(_rules);
+        }
+
         public Task<IReadOnlyCollection<AuthorizationRule>> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
         {
             var result = _rules.Where(r => r.UserId == userId).ToList();
@@ -280,6 +291,12 @@ public sealed class AuthorizationServiceTests
                 _rules.Remove(existing);
                 _rules.Add(rule);
             }
+            return Task.CompletedTask;
+        }
+
+        public Task RemoveAsync(AuthorizationRule rule, CancellationToken cancellationToken = default)
+        {
+            _rules.Remove(rule);
             return Task.CompletedTask;
         }
     }
