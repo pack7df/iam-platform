@@ -24,4 +24,15 @@ public sealed class ResourceRepository : IResourceRepository
         return await _context.Resources
             .FirstOrDefaultAsync(r => r.Id == resourceId, cancellationToken);
     }
+
+    public async Task AddAsync(Resource resource, CancellationToken cancellationToken = default)
+    {
+        await _context.Resources.AddAsync(resource, cancellationToken);
+    }
+
+    public Task UpdateAsync(Resource resource, CancellationToken cancellationToken = default)
+    {
+        _context.Resources.Update(resource);
+        return Task.CompletedTask;
+    }
 }
