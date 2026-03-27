@@ -19,6 +19,7 @@ app.MapBootstrapEndpoints();
 app.MapTenantEndpoints();
 app.MapInvitationEndpoints();
 app.MapResourceEndpoints();
+app.MapOperationEndpoints();
 
 app.Run();
 
