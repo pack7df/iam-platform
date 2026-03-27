@@ -28,6 +28,8 @@ public static class DependencyInjection
          services.AddScoped<IUserRepository, UserRepository>();
          services.AddScoped<IAuthorizationRuleRepository, AuthorizationRuleRepository>();
          services.AddScoped<IUserRoleAssignmentRepository, UserRoleAssignmentRepository>();
+         services.AddScoped<IRoleRepository, RoleRepository>();
+         services.AddScoped<IApplicationRepository, ApplicationRepository>();
 
         return services;
     }
