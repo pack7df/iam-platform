@@ -8,12 +8,13 @@ namespace IamPlatform.UnitTests.Identity;
 public sealed class SystemUserInvitationTests
 {
     [Fact]
-    public async Task InviteAsync_Should_Create_Pending_SystemUser_Invitation()
+    public async Task Handle_Should_Create_Pending_SystemUser_Invitation()
     {
         var repository = new FakeInvitationRepository();
-        var invitationService = new SystemUserInvitation(repository);
+        var handler = new InviteSystemUserHandler(repository);
+        var command = new InviteSystemUserCommand("invite-001", "system-user-002");
 
-        var result = await invitationService.InviteAsync("invite-001", "system-user-002");
+        var result = await handler.Handle(command, CancellationToken.None);
 
         result.Invitation.Id.Should().Be("invite-001");
         result.Invitation.InvitedIdentityId.Should().Be("system-user-002");
@@ -29,15 +30,16 @@ public sealed class SystemUserInvitationTests
     [InlineData(" ", "system-user-002", "Invitation id is required.*")]
     [InlineData("invite-001", "", "Invited identity id is required.*")]
     [InlineData("invite-001", " ", "Invited identity id is required.*")]
-    public async Task InviteAsync_Should_Reject_Invalid_Input(
+    public async Task Handle_Should_Reject_Invalid_Input(
         string invitationId,
         string invitedSystemUserId,
         string expectedMessage)
     {
         var repository = new FakeInvitationRepository();
-        var invitationService = new SystemUserInvitation(repository);
+        var handler = new InviteSystemUserHandler(repository);
+        var command = new InviteSystemUserCommand(invitationId, invitedSystemUserId);
 
-        var act = () => invitationService.InviteAsync(invitationId, invitedSystemUserId);
+        var act = () => handler.Handle(command, CancellationToken.None);
 
         await act.Should().ThrowAsync<ArgumentException>()
             .WithMessage(expectedMessage);

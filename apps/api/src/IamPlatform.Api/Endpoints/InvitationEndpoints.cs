@@ -1,5 +1,6 @@
 using IamPlatform.Application.Identity;
 using IamPlatform.Application.Tenants;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -10,9 +11,9 @@ public static class InvitationEndpoints
 {
     public static IEndpointRouteBuilder MapInvitationEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPost("/system-user-invitations", async (InviteSystemUserRequest request, ISystemUserInvitation invitationService, CancellationToken cancellationToken) =>
+        endpoints.MapPost("/system-user-invitations", async (InviteSystemUserCommand request, ISender mediator, CancellationToken cancellationToken) =>
         {
-            var result = await invitationService.InviteAsync(request.InvitationId, request.InvitedSystemUserId, cancellationToken);
+            var result = await mediator.Send(request, cancellationToken);
 
             return Results.Created($"/system-user-invitations/{result.Invitation.Id}", new
             {
@@ -25,9 +26,9 @@ public static class InvitationEndpoints
         })
         .WithTags("Invitations");
 
-        endpoints.MapPost("/tenant-admin-invitations", async (InviteTenantAdminRequest request, ITenantAdminInvitation invitationService, CancellationToken cancellationToken) =>
+        endpoints.MapPost("/tenant-admin-invitations", async (InviteTenantAdminCommand request, ISender mediator, CancellationToken cancellationToken) =>
         {
-            var result = await invitationService.InviteAsync(request.InvitationId, request.TenantId, request.InvitedTenantAdminId, cancellationToken);
+            var result = await mediator.Send(request, cancellationToken);
 
             return Results.Created($"/tenant-admin-invitations/{result.Invitation.Id}", new
             {

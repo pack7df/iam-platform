@@ -1,4 +1,5 @@
 using IamPlatform.Application.Tenants;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -9,14 +10,15 @@ public static class TenantEndpoints
 {
     public static IEndpointRouteBuilder MapTenantEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPost("/tenants/registration", async (RegisterTenantAdminRequest request, ITenantAdminRegistration registration, CancellationToken cancellationToken) =>
+        endpoints.MapPost("/tenants", async (RegisterTenantAdminCommand request, ISender mediator, CancellationToken cancellationToken) =>
         {
-            var result = await registration.RegisterAsync(request.TenantId, request.TenantName, request.TenantAdminId, cancellationToken);
+            var result = await mediator.Send(request, cancellationToken);
 
             return Results.Created($"/tenants/{result.Tenant.Id}", new
             {
-                tenant = new { id = result.Tenant.Id, name = result.Tenant.Name, isActive = result.Tenant.IsActive },
-                tenantAdmin = new { id = result.TenantAdmin.Id, tenantId = result.TenantAdmin.TenantId, type = result.TenantAdmin.Type.ToString(), isActive = result.TenantAdmin.IsActive }
+                tenantId = result.Tenant.Id,
+                tenantName = result.Tenant.Name,
+                adminId = result.Admin.Id
             });
         })
         .WithTags("Tenants");

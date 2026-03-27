@@ -8,13 +8,14 @@ namespace IamPlatform.UnitTests.Tenants;
 public sealed class TenantAdminInvitationTests
 {
     [Fact]
-    public async Task InviteAsync_Should_Create_Pending_TenantAdmin_Invitation_For_Same_Tenant()
+    public async Task Handle_Should_Create_Pending_TenantAdmin_Invitation_For_Same_Tenant()
     {
         var repository = new FakeInvitationRepository();
         var uow = new FakeUnitOfWork();
-        var invitationService = new TenantAdminInvitation(repository, uow);
+        var handler = new InviteTenantAdminHandler(repository, uow);
+        var command = new InviteTenantAdminCommand("invite-001", "tenant-001", "tenant-admin-002");
 
-        var result = await invitationService.InviteAsync("invite-001", "tenant-001", "tenant-admin-002");
+        var result = await handler.Handle(command, CancellationToken.None);
 
         result.Invitation.Id.Should().Be("invite-001");
         result.Invitation.InvitedIdentityId.Should().Be("tenant-admin-002");
@@ -33,7 +34,7 @@ public sealed class TenantAdminInvitationTests
     [InlineData("invite-001", " ", "tenant-admin-002", "Tenant id is required.*")]
     [InlineData("invite-001", "tenant-001", "", "Invited identity id is required.*")]
     [InlineData("invite-001", "tenant-001", " ", "Invited identity id is required.*")]
-    public async Task InviteAsync_Should_Reject_Invalid_Input(
+    public async Task Handle_Should_Reject_Invalid_Input(
         string invitationId,
         string tenantId,
         string invitedTenantAdminId,
@@ -41,9 +42,10 @@ public sealed class TenantAdminInvitationTests
     {
         var repository = new FakeInvitationRepository();
         var uow = new FakeUnitOfWork();
-        var invitationService = new TenantAdminInvitation(repository, uow);
+        var handler = new InviteTenantAdminHandler(repository, uow);
+        var command = new InviteTenantAdminCommand(invitationId, tenantId, invitedTenantAdminId);
 
-        var act = () => invitationService.InviteAsync(invitationId, tenantId, invitedTenantAdminId);
+        var act = () => handler.Handle(command, CancellationToken.None);
 
         await act.Should().ThrowAsync<ArgumentException>()
             .WithMessage(expectedMessage);

@@ -8,35 +8,37 @@ namespace IamPlatform.UnitTests.Identity;
 public sealed class SystemUserBootstrapperTests
 {
     [Fact]
-    public async Task BootstrapAsync_Should_Create_SystemUser_When_None_Exists()
+    public async Task Handle_Should_Create_SystemUser_When_None_Exists()
     {
         var repository = new FakeUserRepository(existing: false);
         var uow = new FakeUnitOfWork();
-        var bootstrapper = new SystemUserBootstrapper(repository, uow);
+        var handler = new BootstrapSystemUserHandler(repository, uow);
+        var command = new BootstrapSystemUserCommand();
 
-        var result = await bootstrapper.BootstrapAsync();
+        var result = await handler.Handle(command, CancellationToken.None);
 
         result.IsCreated.Should().BeTrue();
-        result.SystemUser.Should().NotBeNull();
-        result.SystemUser!.Id.Should().NotBeNullOrWhiteSpace(); // Generado automáticamente
-        result.SystemUser.Type.Should().Be(UserType.SystemUser);
+        result.User.Should().NotBeNull();
+        result.User!.Id.Should().NotBeNullOrWhiteSpace();
+        result.User.Type.Should().Be(UserType.SystemUser);
         repository.AddedUser.Should().NotBeNull();
-        repository.AddedUser!.Id.Should().Be(result.SystemUser.Id);
+        repository.AddedUser!.Id.Should().Be(result.User.Id);
         repository.AddedUser.Type.Should().Be(UserType.SystemUser);
         uow.SaveChangesCalled.Should().BeTrue();
     }
 
     [Fact]
-    public async Task BootstrapAsync_Should_Reject_When_SystemUser_Already_Exists()
+    public async Task Handle_Should_Reject_When_SystemUser_Already_Exists()
     {
         var repository = new FakeUserRepository(existing: true);
         var uow = new FakeUnitOfWork();
-        var bootstrapper = new SystemUserBootstrapper(repository, uow);
+        var handler = new BootstrapSystemUserHandler(repository, uow);
+        var command = new BootstrapSystemUserCommand();
 
-        var result = await bootstrapper.BootstrapAsync();
+        var result = await handler.Handle(command, CancellationToken.None);
 
         result.IsCreated.Should().BeFalse();
-        result.SystemUser.Should().BeNull();
+        result.User.Should().BeNull();
         repository.AddedUser.Should().BeNull();
     }
 

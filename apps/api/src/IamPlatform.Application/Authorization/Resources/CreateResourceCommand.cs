@@ -3,25 +3,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using IamPlatform.Domain.Authorization;
 using IamPlatform.Domain.Common;
+using MediatR;
 
 namespace IamPlatform.Application.Authorization.Resources;
 
-public sealed class CreateResourceCommand
-{
-    public string Id { get; init; } = string.Empty;
-    public string ApplicationId { get; init; } = string.Empty;
-    public string Name { get; init; } = string.Empty;
-    public string Key { get; init; } = string.Empty;
-    public string? ParentId { get; init; }
-    public string TenantId { get; init; } = string.Empty;
-}
+public sealed record CreateResourceCommand(
+    string Id,
+    string ApplicationId,
+    string Name,
+    string Key,
+    string? ParentId) : IRequest;
 
-public interface ICreateResourceHandler
-{
-    Task HandleAsync(CreateResourceCommand command, CancellationToken cancellationToken = default);
-}
-
-public sealed class CreateResourceHandler : ICreateResourceHandler
+public sealed class CreateResourceHandler : IRequestHandler<CreateResourceCommand>
 {
     private readonly IResourceRepository _repository;
     private readonly IUnitOfWork _unitOfWork;
@@ -32,27 +25,27 @@ public sealed class CreateResourceHandler : ICreateResourceHandler
         _unitOfWork = unitOfWork;
     }
 
-    public async Task HandleAsync(CreateResourceCommand command, CancellationToken cancellationToken = default)
+    public async Task Handle(CreateResourceCommand request, CancellationToken cancellationToken)
     {
-        var existing = await _repository.GetByIdAsync(command.Id, cancellationToken);
+        var existing = await _repository.GetByIdAsync(request.Id, cancellationToken);
         if (existing != null)
         {
-            throw new InvalidOperationException($"Resource with ID {command.Id} already exists.");
+            throw new InvalidOperationException($"Resource with ID {request.Id} already exists.");
         }
 
-        IamPlatform.Domain.Authorization.Resource resource;
-        if (string.IsNullOrEmpty(command.ParentId))
+        Resource resource;
+        if (string.IsNullOrEmpty(request.ParentId))
         {
-            resource = IamPlatform.Domain.Authorization.Resource.CreateRoot(command.Id, command.ApplicationId, command.Name, command.Key);
+            resource = Resource.CreateRoot(request.Id, request.ApplicationId, request.Name, request.Key);
         }
         else
         {
-            var parent = await _repository.GetByIdAsync(command.ParentId, cancellationToken);
+            var parent = await _repository.GetByIdAsync(request.ParentId, cancellationToken);
             if (parent == null)
             {
-                throw new InvalidOperationException($"Parent resource with ID {command.ParentId} not found.");
+                throw new InvalidOperationException($"Parent resource with ID {request.ParentId} not found.");
             }
-            resource = IamPlatform.Domain.Authorization.Resource.CreateChild(command.Id, command.ApplicationId, command.Name, command.Key, command.ParentId);
+            resource = Resource.CreateChild(request.Id, request.ApplicationId, request.Name, request.Key, request.ParentId);
         }
 
         await _repository.AddAsync(resource, cancellationToken);
