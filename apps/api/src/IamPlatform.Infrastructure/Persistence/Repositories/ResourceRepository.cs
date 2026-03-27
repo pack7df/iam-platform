@@ -35,4 +35,10 @@ public sealed class ResourceRepository : IResourceRepository
         _context.Resources.Update(resource);
         return Task.CompletedTask;
     }
+
+    public Task RemoveAsync(Resource resource, CancellationToken cancellationToken = default)
+    {
+        _context.Resources.Remove(resource);
+        return Task.CompletedTask;
+    }
 }
