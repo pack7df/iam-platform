@@ -17,10 +17,10 @@ app.MapHealthChecks("/health");
 // Endpoint Modules
 app.MapBootstrapEndpoints();
 app.MapTenantEndpoints();
+app.MapInvitationEndpoints();
 app.MapOperationEndpoints();
 app.MapAuthorizationEndpoints();
 app.MapResourceEndpoints();
-app.MapOperationEndpoints();
 
 app.Run();
 

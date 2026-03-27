@@ -13,7 +13,7 @@ namespace IamPlatform.IntegrationTests;
 
 public sealed class AuthorizationEndpointsTests
 {
-    private async Task<(string ResourceId, string OperationId)> SeedDependencies(ApiWebApplicationFactory factory)
+    private async Task<(string ResourceId, string OperationId, string UserId, string RoleId)> SeedDependencies(ApiWebApplicationFactory factory)
     {
         using var scope = factory.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<IamPlatformDbContext>();
@@ -22,19 +22,25 @@ public sealed class AuthorizationEndpointsTests
         var appId = Guid.NewGuid().ToString();
         var resId = Guid.NewGuid().ToString();
         var opId = Guid.NewGuid().ToString();
+        var userId = Guid.NewGuid().ToString();
+        var roleId = Guid.NewGuid().ToString();
 
         var tenant = Tenant.Create(tenantId, "Test Tenant Auth");
         var app = DomainApp.Create(appId, tenantId, "Test App Auth");
-        var resource = Resource.Create(resId, appId, "test-res", "Test Resource");
-        var operation = Operation.Create(opId, appId, "test-op", "Test Operation");
+        var resource = IamPlatform.Domain.Authorization.Resource.CreateRoot(resId, appId, "test-res", "test-res-key");
+        var operation = IamPlatform.Domain.Authorization.Operation.Create(opId, appId, "test-op", "Test Operation");
+        var user = User.Create(userId, tenantId, UserType.EndUser);
+        var role = Role.Create(roleId, tenantId, "Test Role");
 
         context.Tenants.Add(tenant);
         context.Applications.Add(app);
         context.Resources.Add(resource);
         context.Operations.Add(operation);
+        context.Users.Add(user);
+        context.Roles.Add(role);
         await context.SaveChangesAsync();
 
-        return (resId, opId);
+        return (resId, opId, userId, roleId);
     }
 
     [Fact]
@@ -42,11 +48,11 @@ public sealed class AuthorizationEndpointsTests
     {
         await using var factory = new ApiWebApplicationFactory();
         using var client = factory.CreateClient();
-        var (resId, opId) = await SeedDependencies(factory);
+        var (resId, opId, userId, _) = await SeedDependencies(factory);
 
         var command = new CreateAuthorizationRuleCommand(
             Guid.NewGuid().ToString(),
-            Guid.NewGuid().ToString(), // Random user ID for test
+            userId,
             null,
             resId,
             opId,
@@ -62,10 +68,10 @@ public sealed class AuthorizationEndpointsTests
     {
         await using var factory = new ApiWebApplicationFactory();
         using var client = factory.CreateClient();
-        var (resId, opId) = await SeedDependencies(factory);
+        var (resId, opId, _, roleId) = await SeedDependencies(factory);
 
         var id = Guid.NewGuid().ToString();
-        var command = new CreateAuthorizationRuleCommand(id, null, "admin", resId, opId, "Allow");
+        var command = new CreateAuthorizationRuleCommand(id, null, roleId, resId, opId, "Allow");
         await client.PostAsJsonAsync("/api/authorization/rules", command);
         
         var response = await client.GetAsync($"/api/authorization/rules/{id}");
@@ -81,10 +87,10 @@ public sealed class AuthorizationEndpointsTests
     {
         await using var factory = new ApiWebApplicationFactory();
         using var client = factory.CreateClient();
-        var (resId, opId) = await SeedDependencies(factory);
+        var (resId, opId, userId, _) = await SeedDependencies(factory);
 
-        var command1 = new CreateAuthorizationRuleCommand(Guid.NewGuid().ToString(), null, "role1", resId, opId, "Allow");
-        var command2 = new CreateAuthorizationRuleCommand(Guid.NewGuid().ToString(), null, "role2", resId, opId, "Deny");
+        var command1 = new CreateAuthorizationRuleCommand(Guid.NewGuid().ToString(), userId, null, resId, opId, "Allow");
+        var command2 = new CreateAuthorizationRuleCommand(Guid.NewGuid().ToString(), userId, null, resId, opId, "Deny");
 
         await client.PostAsJsonAsync("/api/authorization/rules", command1);
         await client.PostAsJsonAsync("/api/authorization/rules", command2);
@@ -102,10 +108,10 @@ public sealed class AuthorizationEndpointsTests
     {
         await using var factory = new ApiWebApplicationFactory();
         using var client = factory.CreateClient();
-        var (resId, opId) = await SeedDependencies(factory);
+        var (resId, opId, userId, _) = await SeedDependencies(factory);
 
         var id = Guid.NewGuid().ToString();
-        var command = new CreateAuthorizationRuleCommand(id, "user1", null, resId, opId, "Allow");
+        var command = new CreateAuthorizationRuleCommand(id, userId, null, resId, opId, "Allow");
         await client.PostAsJsonAsync("/api/authorization/rules", command);
 
         var updateCommand = new UpdateAuthorizationRuleCommand(id, "Deny", false);
@@ -125,10 +131,10 @@ public sealed class AuthorizationEndpointsTests
     {
         await using var factory = new ApiWebApplicationFactory();
         using var client = factory.CreateClient();
-        var (resId, opId) = await SeedDependencies(factory);
+        var (resId, opId, userId, _) = await SeedDependencies(factory);
 
         var id = Guid.NewGuid().ToString();
-        var command = new CreateAuthorizationRuleCommand(id, "user1", null, resId, opId, "Allow");
+        var command = new CreateAuthorizationRuleCommand(id, userId, null, resId, opId, "Allow");
         await client.PostAsJsonAsync("/api/authorization/rules", command);
 
         var response = await client.DeleteAsync($"/api/authorization/rules/{id}");
