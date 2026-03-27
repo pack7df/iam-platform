@@ -16,7 +16,7 @@ app.MapGet("/", () => Results.Ok(new { service = "IamPlatform.Api" }));
 app.MapHealthChecks("/health");
 app.MapPost("/bootstrap/system-user", async (BootstrapSystemUserRequest request, ISystemUserBootstrapper bootstrapper, CancellationToken cancellationToken) =>
 {
-    var result = await bootstrapper.BootstrapAsync(request.SystemUserId, cancellationToken);
+    var result = await bootstrapper.BootstrapAsync(cancellationToken);
 
     return result.IsCreated
         ? Results.Created($"/system-users/{result.SystemUser!.Id}", new

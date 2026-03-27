@@ -14,14 +14,14 @@ public sealed class SystemUserBootstrapperTests
         var uow = new FakeUnitOfWork();
         var bootstrapper = new SystemUserBootstrapper(repository, uow);
 
-        var result = await bootstrapper.BootstrapAsync("system-user-001");
+        var result = await bootstrapper.BootstrapAsync();
 
         result.IsCreated.Should().BeTrue();
         result.SystemUser.Should().NotBeNull();
-        result.SystemUser!.Id.Should().Be("system-user-001");
+        result.SystemUser!.Id.Should().NotBeNullOrWhiteSpace(); // Generado automáticamente
         result.SystemUser.Type.Should().Be(UserType.SystemUser);
         repository.AddedUser.Should().NotBeNull();
-        repository.AddedUser!.Id.Should().Be("system-user-001");
+        repository.AddedUser!.Id.Should().Be(result.SystemUser.Id);
         repository.AddedUser.Type.Should().Be(UserType.SystemUser);
         uow.SaveChangesCalled.Should().BeTrue();
     }
@@ -33,26 +33,10 @@ public sealed class SystemUserBootstrapperTests
         var uow = new FakeUnitOfWork();
         var bootstrapper = new SystemUserBootstrapper(repository, uow);
 
-        var result = await bootstrapper.BootstrapAsync("system-user-001");
+        var result = await bootstrapper.BootstrapAsync();
 
         result.IsCreated.Should().BeFalse();
         result.SystemUser.Should().BeNull();
-        repository.AddedUser.Should().BeNull();
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData(" ")]
-    public async Task BootstrapAsync_Should_Reject_Invalid_Id(string invalidId)
-    {
-        var repository = new FakeUserRepository(existing: false);
-        var uow = new FakeUnitOfWork();
-        var bootstrapper = new SystemUserBootstrapper(repository, uow);
-
-        var act = () => bootstrapper.BootstrapAsync(invalidId);
-
-        await act.Should().ThrowAsync<ArgumentException>()
-            .WithMessage("User id is required.*");
         repository.AddedUser.Should().BeNull();
     }
 
@@ -69,7 +53,6 @@ public sealed class SystemUserBootstrapperTests
 
         public Task<User?> GetByIdAsync(string userId, CancellationToken cancellationToken = default)
         {
-            // Not needed for current tests
             return Task.FromResult<User?>(_existing ? User.CreateSystemUser(userId) : null);
         }
 

@@ -18,7 +18,6 @@ public sealed class SystemUserBootstrapper : ISystemUserBootstrapper
     }
 
     public async Task<SystemUserBootstrapResult> BootstrapAsync(
-        string systemUserId,
         CancellationToken cancellationToken = default)
     {
         if (await _userRepository.ExistsByTypeAsync(UserType.SystemUser, cancellationToken))
@@ -26,7 +25,8 @@ public sealed class SystemUserBootstrapper : ISystemUserBootstrapper
             return SystemUserBootstrapResult.AlreadyBootstrapped();
         }
 
-        var systemUser = User.CreateSystemUser(systemUserId);
+        var id = Guid.NewGuid().ToString();
+        var systemUser = User.CreateSystemUser(id);
         await _userRepository.AddAsync(systemUser, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);
 
