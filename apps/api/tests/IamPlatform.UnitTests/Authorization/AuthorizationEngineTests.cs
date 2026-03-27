@@ -519,5 +519,17 @@ public sealed class AuthorizationEngineTests
             var result = _assignments.Where(a => a.UserId == userId).ToList();
             return Task.FromResult<IReadOnlyCollection<UserRoleAssignment>>(result);
         }
+
+        public Task AddAsync(UserRoleAssignment assignment, CancellationToken cancellationToken = default)
+        {
+            _assignments.Add(assignment);
+            return Task.CompletedTask;
+        }
+
+        public Task RemoveAsync(UserRoleAssignment assignment, CancellationToken cancellationToken = default)
+        {
+            _assignments.Remove(assignment);
+            return Task.CompletedTask;
+        }
     }
 }
