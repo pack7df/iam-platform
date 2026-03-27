@@ -36,7 +36,7 @@ public sealed class ApplicationConfiguration : IEntityTypeConfiguration<IamPlatf
             .HasDefaultValueSql("NOW()");
             
         // Relationships
-        builder.HasOne<User>()
+        builder.HasOne<Tenant>()
             .WithMany()
             .HasForeignKey(a => a.TenantId)
             .OnDelete(DeleteBehavior.Cascade);
