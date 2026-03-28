@@ -14,16 +14,9 @@ public static class UserRoleEndpoints
 
         group.MapPost("/", async (string userId, AssignRoleRequest request, ISender mediator, CancellationToken ct) =>
         {
-            try
-            {
-                var command = new AssignRoleToUserCommand(userId, request.RoleId);
-                await mediator.Send(command, ct);
-                return Results.Created($"/api/users/{userId}/roles", new { userId, request.RoleId });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Results.BadRequest(ex.Message);
-            }
+            var command = new AssignRoleToUserCommand(userId, request.RoleId);
+            await mediator.Send(command, ct);
+            return Results.Created($"/api/users/{userId}/roles", new { userId, request.RoleId });
         });
 
         group.MapGet("/", async (string userId, ISender mediator, CancellationToken ct) =>
