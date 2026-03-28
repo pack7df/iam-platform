@@ -22,6 +22,7 @@ public sealed class IamPlatformDbContext : DbContext, IUnitOfWork
     // Users & Identity
     public DbSet<User> Users => Set<User>();
     public DbSet<Invitation> Invitations => Set<Invitation>();
+    public DbSet<VerificationCode> VerificationCodes => Set<VerificationCode>();
     
     // Roles & Assignments
     public DbSet<Role> Roles => Set<Role>();
