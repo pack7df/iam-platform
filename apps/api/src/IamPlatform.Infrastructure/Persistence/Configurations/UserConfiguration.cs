@@ -18,12 +18,21 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(50); // Nullable: SystemUser has null tenant_id
             
         builder.Property(u => u.Type)
+            .HasMaxLength(30)
             .HasConversion<string>()
             .IsRequired();
             
-        builder.Property(u => u.IsActive)
+        builder.Property(u => u.Status)
+            .HasMaxLength(30)
+            .HasConversion<string>()
             .IsRequired()
-            .HasDefaultValue(true);
+            .HasDefaultValue(UserStatus.PendingVerification);
+
+        builder.Property(u => u.PasswordHash)
+            .HasMaxLength(500);
+
+        builder.Property(u => u.Salt)
+            .HasMaxLength(100);
             
         // Shadow properties for timestamps
         builder.Property<DateTime>("CreatedAt")

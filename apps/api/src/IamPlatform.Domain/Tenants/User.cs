@@ -4,7 +4,7 @@ namespace IamPlatform.Domain.Tenants;
 
 public sealed class User
 {
-    private User(string id, string? tenantId, UserType type, bool isActive)
+    private User(string id, string? tenantId, UserType type, UserStatus status)
     {
         Id = Guard.Required(id, nameof(id), "User id is required.");
         
@@ -20,7 +20,7 @@ public sealed class User
         }
         
         Type = type;
-        IsActive = isActive;
+        Status = status;
     }
 
     public string Id { get; }
@@ -29,16 +29,22 @@ public sealed class User
 
     public UserType Type { get; private set; }
 
-    public bool IsActive { get; private set; }
+    public UserStatus Status { get; private set; }
 
-    public static User Create(string id, string tenantId, UserType type)
+    public string? PasswordHash { get; private set; }
+
+    public string? Salt { get; private set; }
+
+    public bool IsActive => Status == UserStatus.Active;
+
+    public static User Create(string id, string tenantId, UserType type, UserStatus status = UserStatus.PendingVerification)
     {
-        return new User(id, tenantId, type, true);
+        return new User(id, tenantId, type, status);
     }
 
-    public static User CreateSystemUser(string id)
+    public static User CreateSystemUser(string id, UserStatus status = UserStatus.Active)
     {
-        return new User(id, null, UserType.SystemUser, true);
+        return new User(id, null, UserType.SystemUser, status);
     }
 
     public void ChangeType(UserType type)
@@ -51,13 +57,14 @@ public sealed class User
         Type = type;
     }
 
-    public void Activate()
+    public void UpdateStatus(UserStatus status)
     {
-        IsActive = true;
+        Status = status;
     }
 
-    public void Deactivate()
+    public void SetPassword(string hash, string salt)
     {
-        IsActive = false;
+        PasswordHash = Guard.Required(hash, nameof(hash), "Password hash is required.");
+        Salt = Guard.Required(salt, nameof(salt), "Salt is required.");
     }
 }

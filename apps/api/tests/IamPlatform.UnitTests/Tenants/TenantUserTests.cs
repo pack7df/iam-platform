@@ -14,7 +14,8 @@ public sealed class UserTests
         tenantUser.Id.Should().Be("user-001");
         tenantUser.TenantId.Should().Be("tenant-001");
         tenantUser.Type.Should().Be(UserType.TenantAdmin);
-        tenantUser.IsActive.Should().BeTrue();
+        tenantUser.Status.Should().Be(UserStatus.PendingVerification);
+        tenantUser.IsActive.Should().BeFalse();
     }
 
     [Theory]
@@ -50,23 +51,34 @@ public sealed class UserTests
     }
 
     [Fact]
-    public void Deactivate_Should_Set_Inactive_Status()
+    public void UpdateStatus_Should_Change_Status()
     {
         var tenantUser = User.Create("user-001", "tenant-001", UserType.EndUser);
 
-        tenantUser.Deactivate();
+        tenantUser.UpdateStatus(UserStatus.Suspended);
 
+        tenantUser.Status.Should().Be(UserStatus.Suspended);
         tenantUser.IsActive.Should().BeFalse();
     }
 
     [Fact]
-    public void Activate_Should_Set_Active_Status()
+    public void UpdateStatus_To_Active_Should_Make_User_Active()
     {
         var tenantUser = User.Create("user-001", "tenant-001", UserType.EndUser);
-        tenantUser.Deactivate();
-
-        tenantUser.Activate();
+        
+        tenantUser.UpdateStatus(UserStatus.Active);
 
         tenantUser.IsActive.Should().BeTrue();
+    }
+
+    [Fact]
+    public void SetPassword_Should_Set_Hash_And_Salt()
+    {
+        var user = User.Create("user-001", "tenant-001", UserType.EndUser);
+
+        user.SetPassword("hashed-pwd", "random-salt");
+
+        user.PasswordHash.Should().Be("hashed-pwd");
+        user.Salt.Should().Be("random-salt");
     }
 }
