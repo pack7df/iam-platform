@@ -32,6 +32,10 @@ public static class DependencyInjection
          services.AddScoped<IApplicationRepository, ApplicationRepository>();
          services.AddScoped<IOperationRepository, OperationRepository>();
 
+         // Domain Services
+         services.AddScoped<IAuthorizationEngine, AuthorizationEngine>();
+         services.AddScoped<IAdminPrivilegeService, AdminPrivilegeService>();
+
         return services;
     }
 }

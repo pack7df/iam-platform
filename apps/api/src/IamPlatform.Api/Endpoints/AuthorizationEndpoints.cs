@@ -1,3 +1,4 @@
+using IamPlatform.Application.Authorization.Evaluation;
 using IamPlatform.Application.Authorization.Rules;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
@@ -11,6 +12,13 @@ public static class AuthorizationEndpoints
 {
     public static IEndpointRouteBuilder MapAuthorizationEndpoints(this IEndpointRouteBuilder endpoints)
     {
+        endpoints.MapPost("/api/authorization/evaluate", async (EvaluateAuthorizationRequest request, ISender mediator, CancellationToken ct) =>
+        {
+            var query = new EvaluateAuthorizationQuery(request.UserId, request.ResourceId, request.OperationId);
+            var result = await mediator.Send(query, ct);
+            return Results.Ok(result);
+        }).WithTags("Authorization");
+
         var group = endpoints.MapGroup("/api/authorization/rules").WithTags("Authorization Rules");
 
         group.MapPost("/", async (CreateAuthorizationRuleCommand command, ISender mediator, CancellationToken ct) =>
@@ -50,3 +58,5 @@ public static class AuthorizationEndpoints
         return endpoints;
     }
 }
+
+public record EvaluateAuthorizationRequest(string UserId, string ResourceId, string OperationId);
