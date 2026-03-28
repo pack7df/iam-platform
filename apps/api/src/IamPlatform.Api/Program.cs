@@ -21,6 +21,7 @@ app.MapInvitationEndpoints();
 app.MapOperationEndpoints();
 app.MapAuthorizationEndpoints();
 app.MapResourceEndpoints();
+app.MapUserRoleEndpoints();
 
 app.Run();
 
