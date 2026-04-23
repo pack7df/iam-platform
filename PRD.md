@@ -17,10 +17,12 @@ The IAM Platform is a multi-tenant Identity and Access Management system designe
 - **Customer Tenant**: Standard tenants created for organizations to host their own applications and users.
 - **Isolation Policy**: Data, users, and configurations are strictly isolated.
 
-### 2.2 Core System Applications
-The **System Tenant** hosts two primary applications to manage the platform:
-1. **Technical Management App**: Used by system engineers and global admins for technical configuration, infrastructure monitoring, and global platform maintenance.
-2. **Management Console**: A self-service portal where customers (Tenant Admins) manage their own tenants, register applications, and administer their users.
+### 2.2 Core System Application
+The **System Tenant** hosts the primary application for the entire platform:
+1. **Unified Management Console**: A single portal for all administrative tasks. 
+    - **System Administrators** access global technical configurations, platform monitoring, and tenant provisioning.
+    - **Tenant Administrators** access their specific tenant's settings, application registrations, and user management.
+    - Access to features is strictly controlled by role-based permissions.
 
 ### 2.3 Applications and SSO
 - **Application**: Software services or resources that belong to a specific Tenant.
