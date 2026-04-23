@@ -38,8 +38,14 @@ The **System Tenant** hosts the primary application for the entire platform:
 - **Single Sign-On (SSO)**: Users registered within a Tenant can authenticate once to access all applications associated with that same Tenant, ensuring a unified login experience.
 
 ### 2.4 Identity Model
-- **Tenant User**: An identity created at the Tenant level. This user profile is shared across the tenant's application portfolio.
-- **Registration**: Users are onboarded into a specific Tenant's user pool.
+- **Tenant User**: An identity created at the Tenant level. There are three primary types of users:
+    - **Human User**: Standard people (Administrators, Employees) who authenticate via credentials.
+    - **Service User**: Non-human identities used for machine-to-machine API access.
+    - **System User (Virtual)**: Internal identities managed by the platform, such as the **Anonymous System User**, used to perform and audit public-facing operations.
+- **Registration Methods**:
+    - **Self-Registration**: Via the IAM's own public forms.
+    - **Invitation**: Via a direct link sent by a Tenant Admin.
+    - **Application-Initiated**: An external Application can register a user directly via API. In this case, the user is automatically associated with the Tenant that owns the Application.
 
 ### 2.5 Entity Model (High-Level)
 - **Tenant**: The root entity. Contains configuration, branding settings, and isolation metadata.
@@ -52,31 +58,32 @@ The **System Tenant** hosts the primary application for the entire platform:
     - **Inherited**: Access is determined by the decision of the parent resource in the hierarchy.
 - **Audit Log**: Global entity tracking administrative actions across all tenants for security compliance.
 
-### 2.6 Authorization Engine Logic
+### 2.7 Authorization Engine Logic
 - **Targeting**: Permissions can be applied directly to a **User** or through assigned **Roles**.
 - **Absolute Deny Precedence**: The "Denied" decision is absolute. If the evaluation process results in a "Denied" at any level (local or inherited from any parent), it nullifies all "Allowed" decisions found across all roles or direct assignments.
 - **Hierarchical Inheritance**: When a permission is set to **Inherited**, the engine evaluates the same Action on the parent Resource. This process continues recursively up to the root.
 - **Default State**: If the final resolved decision is neither "Allowed" nor "Denied" (all nodes are inherited up to the root), the default outcome is **Denied** (Security by Design).
+- **Programmatic Management**: Applications (via Service Identities) can perform automated permission and resource management through the IAM API, enabling dynamic security modeling within external software.
 
-### 2.7 Mandatory User Context
+### 2.8 Mandatory User Context
 - **Ubiquitous Accountability**: Every operation performed within the platform must be associated with a **User**. There are no truly "anonymous" actions at the system level.
 - **System/Anonymous Users**: Public operations (such as self-registration or password resets) are executed on behalf of specialized **System Users** (e.g., `Anonymous_Public_User`).
 - **Audit Consistency**: This ensures that every entry in the **Audit Log** always contains a valid `UserId`, facilitating security tracking and compliance.
 
-### 2.8 Tenant Customization (Branding)
+### 2.9 Tenant Customization (Branding)
 - Each Tenant can customize the user experience for their applications.
 - **Branding Assets**: Support for custom logos, primary colors, and organization names on login/profile pages.
 - **Domain Mapping**: (Future) Ability to use custom domains for authentication endpoints.
 
-### 2.9 System Bootstrapping
-Upon initial deployment, the platform automatically initializes a default state to ensure immediate operability and accountability:
+### 2.10 System Bootstrapping
+- Upon initial deployment, the platform automatically initializes a default state to ensure immediate operability and accountability:
 - **Default System Tenant**: A dedicated tenant created to host global management resources.
 - **Platform Management Application**: The core administrative application. At bootstrap, it initializes its own **Resource Tree** and **Operations** to manage the platform itself.
 - **Initial System Administrator**: A primary human user granted global administrative privileges via an explicit `Allowed` permission at the root of the system's Resource Tree.
 - **Auditor Service User**: A non-human identity pre-configured with specific permissions required for logging, background processing, and initial registration flows.
 - **Self-Hosting Policy**: The IAM uses its own Authorization Engine to manage internal platform security, ensuring consistency across the entire infrastructure.
 
-### 2.10 Authentication & SSO Flow
+### 2.11 Authentication & SSO Flow
 - **Mandatory Tenant Context**: Authentication MUST always specify a target Tenant. There is no "global" or anonymous login. This rule applies to all applications, including the **Unified Management Console**.
 - **Discovery Mechanism**: Tenants are identified via unique URLs, subdomains, or explicit identifiers during the login process to ensure the correct user pool is targeted.
 - **Single Sign-On (SSO)**: Once a user is authenticated at the Tenant level, they receive a session token that permits access to any registered Application under that tenant, without requiring further credentials.
@@ -87,6 +94,7 @@ Upon initial deployment, the platform automatically initializes a default state 
 ### 3.1 Functional
 - **Tenant Management**: Ability to create and configure isolated tenants.
 - **Application Registration**: Tenants can register multiple applications under their umbrella.
+- **Application-initiated Registration**: Support for external applications to programmatically register users via API.
 - **Centralized Authentication**: A unified login interface that handles authentication for all apps within a tenant.
 - **Identity Isolation**: Mechanisms to ensure no data leakage or cross-access between different tenants.
 
