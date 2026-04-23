@@ -37,7 +37,18 @@ The **System Tenant** hosts the primary application for the entire platform:
 - **User**: Belongs to exactly one Tenant. Stores credentials, profile data, and status.
 - **Application**: Belongs to exactly one Tenant. Contains OAuth2/OIDC metadata (Client ID, Secrets, Redirect URIs).
 - **Role**: Defined within a Tenant. Can be assigned to Users to grant permissions across the Tenant's applications.
+- **Permission**: Granular action or access level (e.g., "Read", "Write", "Admin") defined within an Application.
 - **Audit Log**: Global entity tracking administrative actions across all tenants for security compliance.
+
+### 2.6 Authorization Model
+- **Role-Based Access Control (RBAC)**: Permissions are grouped into Roles. Users are assigned one or more Roles within their Tenant.
+- **Scope**: Permissions are scoped to specific Applications. A "Manager" role might grant "Write" access to App A but only "Read" access to App B.
+- **Global vs. Tenant Permissions**: System Admins have global permissions over the entire platform, while Tenant Admins have full permissions restricted to their own Tenant's boundary.
+
+### 2.7 Tenant Customization (Branding)
+- Each Tenant can customize the user experience for their applications.
+- **Branding Assets**: Support for custom logos, primary colors, and organization names on login/profile pages.
+- **Domain Mapping**: (Future) Ability to use custom domains for authentication endpoints.
 
 ## 3. High-Level Requirements
 
