@@ -1,11 +1,11 @@
 using IamPlatform.Domain.Common;
 using IamPlatform.Domain.Tenants;
+using IamPlatform.Domain.Users;
 using IamPlatform.Infrastructure.Persistence;
 using IamPlatform.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
 
 namespace IamPlatform.Infrastructure;
 
@@ -22,6 +22,6 @@ public static class DependencyInjection
         services.AddScoped<ITenantRepository, TenantRepository>();
 
         return services;
+
     }
 }
-
