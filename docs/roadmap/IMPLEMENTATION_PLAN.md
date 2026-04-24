@@ -18,7 +18,7 @@ Focus on the "Engine" and the physical data structure. Every task must result in
 - [x] **T1.1.2: Base Repository & Unit of Work**: Implement generic repository pattern for simple CRUDs.
 - [x] **T1.1.3: Core Identity Model**: `Users` table with multi-tenant isolation and soft-delete logic.
 - [x] **T1.1.4: Applications & Resources Model**: `Applications` and hierarchical `Resources` tables.
-- [ ] **T1.1.5: Operations & Actions Model**: `Operations` (global/tenant) and `Actions` bridge table.
+- [x] **T1.1.5: Operations & Actions Model**: `Operations` (global/tenant) and `Actions` bridge table.
 - [ ] **T1.1.6: Roles & Permissions Model**: `Roles` and the central `Permissions` assignment table.
 - [ ] **T1.1.7: Audit Infrastructure**: `AuditLogs` table and base entity audit tracking logic.
 
