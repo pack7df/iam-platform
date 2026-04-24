@@ -15,9 +15,10 @@ public class IamPlatformDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<IamPlatform.Domain.Applications.Application> Applications => Set<IamPlatform.Domain.Applications.Application>();
     public DbSet<Resource> Resources => Set<Resource>();
+    public DbSet<IamPlatform.Domain.Operations.Operation> Operations => Set<IamPlatform.Domain.Operations.Operation>();
+    public DbSet<IamPlatform.Domain.Applications.Action> Actions => Set<IamPlatform.Domain.Applications.Action>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
-
     {
         base.OnModelCreating(modelBuilder);
 
@@ -77,8 +78,35 @@ public class IamPlatformDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
         });
 
+        modelBuilder.Entity<IamPlatform.Domain.Operations.Operation>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Key).IsRequired().HasMaxLength(100);
 
+            entity.HasIndex(e => new { e.TenantId, e.Key }).IsUnique();
+
+            entity.HasOne<Tenant>()
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<IamPlatform.Domain.Applications.Action>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.HasIndex(e => new { e.ResourceId, e.OperationId }).IsUnique();
+
+            entity.HasOne<Resource>()
+                .WithMany()
+                .HasForeignKey(e => e.ResourceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne<IamPlatform.Domain.Operations.Operation>()
+                .WithMany()
+                .HasForeignKey(e => e.OperationId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
     }
 }
-
-

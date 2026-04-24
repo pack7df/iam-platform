@@ -14,5 +14,11 @@ public class ResourceRepository : ApplicationScopedRepository<Resource>, IResour
         return await _dbSet
             .FirstOrDefaultAsync(r => r.ApplicationId == _applicationId && r.Key == key, cancellationToken);
     }
+
+    public IActionRepository GetActionRepository(Guid resourceId)
+    {
+        return new ActionRepository(_context, resourceId);
+    }
 }
+
 
