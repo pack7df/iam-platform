@@ -16,7 +16,7 @@ Focus on the "Engine" and the physical data structure. Every task must result in
 ### 1.1 Persistence Engine
 - [x] **T1.1.1: Persistence Infrastructure Setup**: Config EF Core, Npgsql and implement `Tenants` table.
 - [x] **T1.1.2: Base Repository & Unit of Work**: Implement generic repository pattern for simple CRUDs.
-- [ ] **T1.1.3: Core Identity Model**: `Users` table with multi-tenant isolation and soft-delete logic.
+- [x] **T1.1.3: Core Identity Model**: `Users` table with multi-tenant isolation and soft-delete logic.
 - [ ] **T1.1.4: Applications & Resources Model**: `Applications` and hierarchical `Resources` tables.
 - [ ] **T1.1.5: Operations & Actions Model**: `Operations` (global/tenant) and `Actions` bridge table.
 - [ ] **T1.1.6: Roles & Permissions Model**: `Roles` and the central `Permissions` assignment table.
