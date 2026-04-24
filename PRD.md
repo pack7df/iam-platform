@@ -64,6 +64,7 @@ The **System Tenant** hosts the primary application for the entire platform:
 - **Hierarchical Inheritance**: When a permission is set to **Inherited**, the engine evaluates the same Action on the parent Resource. This process continues recursively up to the root.
 - **Default State**: If the final resolved decision is neither "Allowed" nor "Denied" (all nodes are inherited up to the root), the default outcome is **Denied** (Security by Design).
 - **Programmatic Management**: Applications (via Service Identities) can perform automated permission and resource management through the IAM API, enabling dynamic security modeling within external software.
+- **System-Reserved Operations**: Certain operations have built-in meaning for the IAM platform. The primary one is **ADMIN** (or **MANAGE**). Any API call that attempts to modify permissions, resources, or metadata must first pass a check for the `ADMIN` operation on the target resource or any of its ancestors.
 
 ### 2.8 Mandatory User Context
 - **Ubiquitous Accountability**: Every operation performed within the platform must be associated with a **User**. There are no truly "anonymous" actions at the system level.

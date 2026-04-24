@@ -50,7 +50,9 @@ Table `Resources`:
 ### 3.2 Operations
 Table `Operations`:
 - `Id`: UUID (Primary Key)
+- `TenantId`: UUID (Foreign Key to Tenants, NULL for System-wide operations)
 - `Name`: String (e.g., "Read", "Write", "Delete", "Admin")
+*Constraint: Unique constraint on `(TenantId, Name)` (treating NULL as a specific value).*
 
 ### 3.3 Actions
 Table `Actions`:
