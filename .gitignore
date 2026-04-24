@@ -43,3 +43,21 @@ coverage/
 .cache/
 tmp/
 temp/
+
+# .NET
+bin/
+obj/
+*.user
+*.userosscache
+*.sln.docuser
+.vs/
+.history/
+.ionide/
+.net/
+.DS_Store
+*.suo
+*.user
+*.userosscache
+*.sln.docuser
+*.userprefs
+

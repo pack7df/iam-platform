@@ -3,8 +3,8 @@
 This document defines the official technology stack and architectural patterns for the IAM Platform.
 
 ## 1. Backend
-- **Framework**: .NET 8 (ASP.NET Core Web API)
-- **Language**: C# 12
+- **Framework**: .NET 9 (ASP.NET Core Web API)
+- **Language**: C# 13
 - **Architecture**: Domain-Driven Design (DDD) with Clean Architecture.
 - **Patterns**:
   - **CQRS**: Using **MediatR** for command and query separation.
