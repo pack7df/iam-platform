@@ -1,5 +1,6 @@
 using IamPlatform.Domain.Tenants;
 using IamPlatform.Domain.Users;
+using IamPlatform.Domain.Applications;
 using IamPlatform.Infrastructure.Persistence.Repositories;
 
 namespace IamPlatform.Infrastructure.Persistence.Repositories;
@@ -14,4 +15,11 @@ public class TenantRepository : BaseRepository<Tenant>, ITenantRepository
     {
         return new UserRepository(_context, tenantId);
     }
+
+    public IApplicationRepository GetApplicationRepository(Guid tenantId)
+    {
+        return new ApplicationRepository(_context, tenantId);
+    }
 }
+
+
