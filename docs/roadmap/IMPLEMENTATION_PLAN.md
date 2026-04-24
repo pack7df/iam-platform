@@ -3,10 +3,26 @@
 This roadmap outlines the approximate phases and tasks required to build the IAM Platform from scratch, following the "Spec-Driven" approach.
 
 ## Phase 1: Foundation & Core Logic
-Focus on the "Engine" and the physical data structure.
-- [ ] **Infrastructure & Database**: Implement the relational schema (PostgreSQL) with multi-tenant isolation, soft-deletes, and auditing columns.
-- [ ] **Authorization Engine**: Develop the core logic for recursive Resource Tree traversal and Permission resolution (Allow/Deny/Inherit logic).
-- [ ] **System Bootstrapping**: Create the automated script to initialize the **System Tenant**, the **System Admin**, and the **Auditor Service User**.
+Focus on the "Engine" and the physical data structure. Every task must result in less than 500 lines of change.
+
+### 1.1 Infrastructure & Database
+- [ ] **T1.1.1: Persistence Infrastructure Setup**: Project configuration and `Tenants` table implementation.
+- [ ] **T1.1.2: Core Identity Model**: `Users` table with multi-tenant isolation and soft-delete logic.
+- [ ] **T1.1.3: Applications & Resources Model**: `Applications` and hierarchical `Resources` tables.
+- [ ] **T1.1.4: Operations & Actions Model**: `Operations` (global/tenant) and `Actions` bridge table.
+- [ ] **T1.1.5: Roles & Permissions Model**: `Roles` and the central `Permissions` assignment table.
+- [ ] **T1.1.6: Audit Infrastructure**: `AuditLogs` table and base entity audit tracking logic.
+
+### 1.2 Authorization Engine
+- [ ] **T1.2.1: Authorization Domain Types**: Decision enums (Allowed/Denied/Inherited) and evaluation models.
+- [ ] **T1.2.2: Resource Tree Traversal**: Recursive logic to resolve parent resources in the hierarchy.
+- [ ] **T1.2.3: Rule Resolution Engine**: Logic for matching rules and applying "Absolute Deny Precedence".
+- [ ] **T1.2.4: Evaluation Pipeline Integration**: Final engine assembly with "Security by Design" default deny.
+
+### 1.3 System Bootstrapping
+- [ ] **T1.3.1: System Initialization Service**: Logic for creating the default System Tenant and Core App.
+- [ ] **T1.3.2: Initial Identity Seeding**: Provisioning the System Admin and Auditor Service User.
+- [ ] **T1.3.3: Self-Hosting Permissions**: Granting root `ADMIN` operation to the initial System Admin.
 
 ## Phase 2: Identity & Authentication
 Focus on the entry point for users.
