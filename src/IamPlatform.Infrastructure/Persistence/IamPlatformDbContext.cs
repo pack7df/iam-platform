@@ -18,6 +18,9 @@ public class IamPlatformDbContext : DbContext
     public DbSet<IamPlatform.Domain.Operations.Operation> Operations => Set<IamPlatform.Domain.Operations.Operation>();
     public DbSet<IamPlatform.Domain.Applications.Action> Actions => Set<IamPlatform.Domain.Applications.Action>();
 
+    public DbSet<IamPlatform.Domain.Tenants.Role> Roles => Set<IamPlatform.Domain.Tenants.Role>();
+    public DbSet<IamPlatform.Domain.Authorization.Permission> Permissions => Set<IamPlatform.Domain.Authorization.Permission>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -38,6 +41,19 @@ public class IamPlatformDbContext : DbContext
             entity.Property(e => e.PasswordHash).IsRequired();
             
             entity.HasIndex(e => new { e.TenantId, e.Email }).IsUnique();
+
+            entity.HasOne<Tenant>()
+                .WithMany()
+                .HasForeignKey(e => e.TenantId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<IamPlatform.Domain.Tenants.Role>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            
+            entity.HasIndex(e => new { e.TenantId, e.Name }).IsUnique();
 
             entity.HasOne<Tenant>()
                 .WithMany()
@@ -108,5 +124,31 @@ public class IamPlatformDbContext : DbContext
                 .HasForeignKey(e => e.OperationId)
                 .OnDelete(DeleteBehavior.Restrict);
         });
+
+        modelBuilder.Entity<IamPlatform.Domain.Authorization.Permission>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            // Constraint: A User can only have one explicit permission per Action
+            entity.HasIndex(e => new { e.ActionId, e.UserId }).IsUnique().HasFilter("\"UserId\" IS NOT NULL");
+            // Constraint: A Role can only have one explicit permission per Action
+            entity.HasIndex(e => new { e.ActionId, e.RoleId }).IsUnique().HasFilter("\"RoleId\" IS NOT NULL");
+
+            entity.HasOne<IamPlatform.Domain.Applications.Action>()
+                .WithMany()
+                .HasForeignKey(e => e.ActionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne<User>()
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne<IamPlatform.Domain.Tenants.Role>()
+                .WithMany()
+                .HasForeignKey(e => e.RoleId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }
+

@@ -10,7 +10,9 @@ public interface ITenantRepository : IRepository<Tenant>
     IUserRepository GetUserRepository(Guid tenantId);
     IApplicationRepository GetApplicationRepository(Guid tenantId);
     IOperationRepository GetOperationRepository(Guid tenantId);
+    IRoleRepository GetRoleRepository(Guid tenantId);
 }
+
 
 
 

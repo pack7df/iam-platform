@@ -1,5 +1,6 @@
 using IamPlatform.Domain.Applications;
 using Microsoft.EntityFrameworkCore;
+using IamPlatform.Domain.Authorization;
 using Action = IamPlatform.Domain.Applications.Action;
 
 namespace IamPlatform.Infrastructure.Persistence.Repositories;
@@ -15,4 +16,10 @@ public class ActionRepository : ResourceScopedRepository<Action>, IActionReposit
         return await _dbSet
             .FirstOrDefaultAsync(a => a.ResourceId == _resourceId && a.OperationId == operationId, cancellationToken);
     }
+
+    public IPermissionRepository GetPermissionRepository(Guid actionId)
+    {
+        return new PermissionRepository(_context, actionId);
+    }
 }
+
