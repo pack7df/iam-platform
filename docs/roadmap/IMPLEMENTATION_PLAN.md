@@ -13,13 +13,15 @@ Initial project structure and environment setup.
 ## Phase 1: Foundation & Core Logic
 Focus on the "Engine" and the physical data structure. Every task must result in less than 500 lines of change.
 
-### 1.1 Infrastructure & Database
-- [ ] **T1.1.1: Persistence Infrastructure Setup**: Project configuration and `Tenants` table implementation.
-- [ ] **T1.1.2: Core Identity Model**: `Users` table with multi-tenant isolation and soft-delete logic.
-- [ ] **T1.1.3: Applications & Resources Model**: `Applications` and hierarchical `Resources` tables.
-- [ ] **T1.1.4: Operations & Actions Model**: `Operations` (global/tenant) and `Actions` bridge table.
-- [ ] **T1.1.5: Roles & Permissions Model**: `Roles` and the central `Permissions` assignment table.
-- [ ] **T1.1.6: Audit Infrastructure**: `AuditLogs` table and base entity audit tracking logic.
+### 1.1 Persistence Engine
+- [x] **T1.1.1: Persistence Infrastructure Setup**: Config EF Core, Npgsql and implement `Tenants` table.
+- [ ] **T1.1.2: Base Repository & Unit of Work**: Implement generic repository pattern for simple CRUDs.
+- [ ] **T1.1.3: Core Identity Model**: `Users` table with multi-tenant isolation and soft-delete logic.
+- [ ] **T1.1.4: Applications & Resources Model**: `Applications` and hierarchical `Resources` tables.
+- [ ] **T1.1.5: Operations & Actions Model**: `Operations` (global/tenant) and `Actions` bridge table.
+- [ ] **T1.1.6: Roles & Permissions Model**: `Roles` and the central `Permissions` assignment table.
+- [ ] **T1.1.7: Audit Infrastructure**: `AuditLogs` table and base entity audit tracking logic.
+
 
 ### 1.2 Authorization Engine
 - [ ] **T1.2.1: Authorization Domain Types**: Decision enums (Allowed/Denied/Inherited) and evaluation models.
