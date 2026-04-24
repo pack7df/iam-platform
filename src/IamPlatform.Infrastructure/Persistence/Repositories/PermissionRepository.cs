@@ -18,29 +18,35 @@ public class PermissionRepository : BaseRepository<Permission>, IPermissionRepos
         _actionId = actionId;
     }
 
-    public async Task<IEnumerable<Permission>> GetByActionAsync(Guid actionId, CancellationToken cancellationToken = default)
-    {
-        return await _dbSet.Where(p => p.ActionId == actionId).ToListAsync(cancellationToken);
-    }
-
     public async Task<IEnumerable<Permission>> GetByUserAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        return await _dbSet.Where(p => p.UserId == userId).ToListAsync(cancellationToken);
+        var query = _dbSet.Where(p => p.UserId == userId);
+        
+        if (_actionId.HasValue)
+            query = query.Where(p => p.ActionId == _actionId.Value);
+
+        return await query.ToListAsync(cancellationToken);
     }
 
     public async Task<IEnumerable<Permission>> GetByRoleAsync(Guid roleId, CancellationToken cancellationToken = default)
     {
-        return await _dbSet.Where(p => p.RoleId == roleId).ToListAsync(cancellationToken);
+        var query = _dbSet.Where(p => p.RoleId == roleId);
+        
+        if (_actionId.HasValue)
+            query = query.Where(p => p.ActionId == _actionId.Value);
+
+        return await query.ToListAsync(cancellationToken);
     }
 
     public override async Task<IEnumerable<Permission>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         if (_actionId.HasValue)
         {
-            return await GetByActionAsync(_actionId.Value, cancellationToken);
+            return await _dbSet.Where(p => p.ActionId == _actionId.Value).ToListAsync(cancellationToken);
         }
         return await base.GetAllAsync(cancellationToken);
     }
+
 
     public override async Task AddAsync(Permission entity, CancellationToken cancellationToken = default)
     {
