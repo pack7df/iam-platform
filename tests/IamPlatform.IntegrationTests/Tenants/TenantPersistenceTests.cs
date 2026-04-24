@@ -1,7 +1,6 @@
 using IamPlatform.Domain.Tenants;
-using IamPlatform.Infrastructure.Persistence;
+using IamPlatform.Domain.Common;
 using FluentAssertions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace IamPlatform.IntegrationTests.Tenants;
@@ -9,21 +8,25 @@ namespace IamPlatform.IntegrationTests.Tenants;
 public class TenantPersistenceTests : BaseIntegrationTest
 {
     [Fact]
-    public async Task Should_PersistAndRetrieve_Tenant()
+    public async Task Should_PersistAndRetrieve_Tenant_UsingRepository()
     {
         // Arrange
-        var tenant = new Tenant("Test Tenant", "test-tenant");
+        var tenant = new Tenant("Repo Tenant", "repo-tenant");
         using var scope = Factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<IamPlatformDbContext>();
+        var repository = scope.ServiceProvider.GetRequiredService<ITenantRepository>();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
         // Act
-        context.Tenants.Add(tenant);
-        await context.SaveChangesAsync();
+        await repository.AddAsync(tenant);
+        await unitOfWork.SaveChangesAsync();
 
         // Assert
-        var retrieved = await context.Tenants.FirstOrDefaultAsync(t => t.Slug == "test-tenant");
+        var allTenants = await repository.GetAllAsync();
+        var retrieved = allTenants.FirstOrDefault(t => t.Slug == "repo-tenant");
+        
         retrieved.Should().NotBeNull();
-        retrieved!.Name.Should().Be("Test Tenant");
+        retrieved!.Name.Should().Be("Repo Tenant");
     }
 }
+
 
