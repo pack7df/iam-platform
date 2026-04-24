@@ -8,7 +8,7 @@ Initial project structure and environment setup.
 ### 0.1 Solution & Architecture
 - [x] **T0.1.1: .NET Solution & Projects Setup**: Create Solution and Projects (Domain, Application, Infrastructure, API) following DDD layers.
 - [x] **T0.1.2: Global Dependencies**: Install and configure base libraries (MediatR, FluentValidation, Serilog).
-- [ ] **T0.1.3: Testing Environment**: Setup xUnit, FluentAssertions, and Testcontainers for Integration Testing.
+- [x] **T0.1.3: Testing Environment**: Setup xUnit, FluentAssertions, and Testcontainers for Integration Testing.
 
 ## Phase 1: Foundation & Core Logic
 Focus on the "Engine" and the physical data structure. Every task must result in less than 500 lines of change.
