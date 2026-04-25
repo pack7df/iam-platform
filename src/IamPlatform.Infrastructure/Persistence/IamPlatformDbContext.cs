@@ -129,10 +129,24 @@ public class IamPlatformDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
 
-            // Constraint: A User can only have one explicit permission per Action
-            entity.HasIndex(e => new { e.ActionId, e.UserId }).IsUnique().HasFilter("\"UserId\" IS NOT NULL");
-            // Constraint: A Role can only have one explicit permission per Action
-            entity.HasIndex(e => new { e.ActionId, e.RoleId }).IsUnique().HasFilter("\"RoleId\" IS NOT NULL");
+            // Unique constraint for the triplet (ActionId, UserId, RoleId)
+            // We use partial indices to handle NULLs correctly in PostgreSQL
+            
+            // 1. Case: Only User assigned (RoleId is NULL)
+            entity.HasIndex(e => new { e.ActionId, e.UserId })
+                .IsUnique()
+                .HasFilter("\"UserId\" IS NOT NULL AND \"RoleId\" IS NULL");
+
+            // 2. Case: Only Role assigned (UserId is NULL)
+            entity.HasIndex(e => new { e.ActionId, e.RoleId })
+                .IsUnique()
+                .HasFilter("\"RoleId\" IS NOT NULL AND \"UserId\" IS NULL");
+
+            // 3. Case: User assigned within a Role (Both NOT NULL)
+            entity.HasIndex(e => new { e.ActionId, e.UserId, e.RoleId })
+                .IsUnique()
+                .HasFilter("\"UserId\" IS NOT NULL AND \"RoleId\" IS NOT NULL");
+
 
             entity.HasOne<IamPlatform.Domain.Applications.Action>()
                 .WithMany()

@@ -17,10 +17,8 @@ public class Permission : BaseEntity
     public Permission(Guid actionId, PermissionOutcome outcome, Guid? userId = null, Guid? roleId = null)
     {
         if (userId == null && roleId == null)
-            throw new ArgumentException("A permission must be assigned to either a User or a Role.");
-            
-        if (userId != null && roleId != null)
-            throw new ArgumentException("A permission cannot be assigned to both a User and a Role simultaneously.");
+            throw new ArgumentException("A permission must be assigned to at least a User or a Role.");
+
 
         ActionId = actionId;
         Outcome = outcome;

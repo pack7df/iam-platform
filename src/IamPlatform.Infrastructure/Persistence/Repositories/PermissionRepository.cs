@@ -5,14 +5,8 @@ namespace IamPlatform.Infrastructure.Persistence.Repositories;
 
 public class PermissionRepository : BaseRepository<Permission>, IPermissionRepository
 {
-    private readonly Guid? _actionId;
+    private readonly Guid _actionId;
 
-    // Internal constructor for DI if needed globally (e.g. for querying by User/Role across actions)
-    public PermissionRepository(IamPlatformDbContext context) : base(context)
-    {
-    }
-
-    // Constructor used by ActionRepository builder
     public PermissionRepository(IamPlatformDbContext context, Guid actionId) : base(context)
     {
         _actionId = actionId;
@@ -20,40 +14,59 @@ public class PermissionRepository : BaseRepository<Permission>, IPermissionRepos
 
     public async Task<IEnumerable<Permission>> GetByUserAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.Where(p => p.UserId == userId);
-        
-        if (_actionId.HasValue)
-            query = query.Where(p => p.ActionId == _actionId.Value);
-
-        return await query.ToListAsync(cancellationToken);
+        return await _dbSet
+            .Where(p => p.ActionId == _actionId && p.UserId == userId)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<IEnumerable<Permission>> GetByRoleAsync(Guid roleId, CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.Where(p => p.RoleId == roleId);
-        
-        if (_actionId.HasValue)
-            query = query.Where(p => p.ActionId == _actionId.Value);
-
-        return await query.ToListAsync(cancellationToken);
+        return await _dbSet
+            .Where(p => p.ActionId == _actionId && p.RoleId == roleId)
+            .ToListAsync(cancellationToken);
     }
 
     public override async Task<IEnumerable<Permission>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        if (_actionId.HasValue)
-        {
-            return await _dbSet.Where(p => p.ActionId == _actionId.Value).ToListAsync(cancellationToken);
-        }
-        return await base.GetAllAsync(cancellationToken);
+        return await _dbSet.Where(p => p.ActionId == _actionId).ToListAsync(cancellationToken);
     }
 
-
-    public override async Task AddAsync(Permission entity, CancellationToken cancellationToken = default)
+    public override async Task<Permission?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        if (_actionId.HasValue)
+        var entity = await base.GetByIdAsync(id, cancellationToken);
+
+        if (entity != null && entity.ActionId != _actionId)
+            return null;
+
+        return entity;
+    }
+
+    // Removed AddAsync as permissions should be managed via SetAsync (Upsert)
+    // to maintain the unique constraint per User/Role per Action.
+    public async Task<Permission> SetAsync(Permission permission, CancellationToken cancellationToken = default)
+    {
+        permission.ActionId = _actionId;
+
+        var existing = await FindExistingAsync(permission, cancellationToken);
+
+        if (existing != null)
         {
-            entity.ActionId = _actionId.Value;
+            existing.Outcome = permission.Outcome;
+            return existing;
         }
-        await base.AddAsync(entity, cancellationToken);
+
+        await base.AddAsync(permission, cancellationToken);
+        return permission;
+    }
+
+    private async Task<Permission?> FindExistingAsync(Permission permission, CancellationToken cancellationToken)
+    {
+        return await _dbSet.FirstOrDefaultAsync(
+            p => p.ActionId == _actionId && 
+                 p.UserId == permission.UserId && 
+                 p.RoleId == permission.RoleId, cancellationToken);
     }
 }
+
+
+
