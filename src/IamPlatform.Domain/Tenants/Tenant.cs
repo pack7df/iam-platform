@@ -24,5 +24,11 @@ public class Tenant : BaseEntity
         Name = name;
         Slug = slug;
     }
+
+    public void UpdateName(string newName)
+    {
+        Name = newName;
+    }
 }
+
 

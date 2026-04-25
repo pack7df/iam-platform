@@ -2,6 +2,7 @@ using IamPlatform.Domain.Common;
 using IamPlatform.Domain.Tenants;
 using IamPlatform.Domain.Users;
 using IamPlatform.Infrastructure.Persistence;
+using IamPlatform.Infrastructure.Persistence.Interceptors;
 using IamPlatform.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -15,11 +16,17 @@ public static class DependencyInjection
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
 
-        services.AddDbContext<IamPlatformDbContext>(options =>
-            options.UseNpgsql(connectionString));
+        services.AddScoped<AuditInterceptor>();
+
+        services.AddDbContext<IamPlatformDbContext>((sp, options) =>
+        {
+            options.UseNpgsql(connectionString)
+                   .AddInterceptors(sp.GetRequiredService<AuditInterceptor>());
+        });
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<ITenantRepository, TenantRepository>();
+
 
         return services;
 
