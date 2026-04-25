@@ -1,7 +1,9 @@
 using IamPlatform.Domain.Tenants;
 using IamPlatform.Domain.Users;
 using IamPlatform.Domain.Applications;
+using IamPlatform.Domain.Common;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace IamPlatform.Infrastructure.Persistence;
 
@@ -20,12 +22,15 @@ public class IamPlatformDbContext : DbContext
 
     public DbSet<IamPlatform.Domain.Tenants.Role> Roles => Set<IamPlatform.Domain.Tenants.Role>();
     public DbSet<IamPlatform.Domain.Authorization.Permission> Permissions => Set<IamPlatform.Domain.Authorization.Permission>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(IamPlatformDbContext).Assembly);
 
         modelBuilder.Entity<Tenant>(entity =>
+
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
@@ -165,4 +170,3 @@ public class IamPlatformDbContext : DbContext
         });
     }
 }
-

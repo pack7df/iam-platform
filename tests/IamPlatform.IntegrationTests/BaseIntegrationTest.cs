@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using IamPlatform.Infrastructure.Persistence;
+using IamPlatform.Domain.Common;
+using IamPlatform.Infrastructure.Persistence.Interceptors;
 using Testcontainers.PostgreSql;
 using Respawn;
 using System.Data.Common;
@@ -38,8 +40,14 @@ public abstract class BaseIntegrationTest : IAsyncLifetime
 
                     if (descriptor != null) services.Remove(descriptor);
 
-                    services.AddDbContext<IamPlatformDbContext>(options =>
-                        options.UseNpgsql(_dbContainer.GetConnectionString()));
+                    services.AddDbContext<IamPlatformDbContext>((sp, options) =>
+                    {
+                        var auditInterceptor = sp.GetRequiredService<AuditInterceptor>();
+                        options.UseNpgsql(_dbContainer.GetConnectionString())
+                               .AddInterceptors(auditInterceptor);
+                    });
+
+                    services.AddScoped<IUserContext, TestUserContext>();
                 });
             });
 
@@ -72,4 +80,10 @@ public abstract class BaseIntegrationTest : IAsyncLifetime
         await _dbConnection.CloseAsync();
         await _dbContainer.StopAsync();
     }
+
+    private class TestUserContext : IUserContext
+    {
+        public Guid? UserId => null;
+    }
 }
+
