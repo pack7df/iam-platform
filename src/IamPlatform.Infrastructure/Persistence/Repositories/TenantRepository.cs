@@ -26,7 +26,13 @@ public class TenantRepository : BaseRepository<Tenant>, ITenantRepository
     {
         return new OperationRepository(_context, tenantId);
     }
+
+    public IRoleRepository GetRoleRepository(Guid tenantId)
+    {
+        return new RoleRepository(_context, tenantId);
+    }
 }
+
 
 
 
