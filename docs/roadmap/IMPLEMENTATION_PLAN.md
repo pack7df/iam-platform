@@ -20,7 +20,7 @@ Focus on the "Engine" and the physical data structure. Every task must result in
 - [x] **T1.1.4: Applications & Resources Model**: `Applications` and hierarchical `Resources` tables.
 - [x] **T1.1.5: Operations & Actions Model**: `Operations` (global/tenant) and `Actions` bridge table.
 - [x] **T1.1.6: Roles & Permissions Model**: `Roles` and the central `Permissions` assignment table.
-- [ ] **T1.1.7: Audit Infrastructure**: `AuditLogs` table and base entity audit tracking logic.
+- [x] **T1.1.7: Audit Infrastructure**: `AuditLogs` table and base entity audit tracking logic.
 
 
 ### 1.2 Authorization Engine
